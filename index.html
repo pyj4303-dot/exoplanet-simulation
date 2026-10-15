@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>외계 행성계 탐사 시뮬레이션 | Exoplanet Exploration Simulator</title>
+  <meta name="description" content="도플러 효과 시선속도법 및 식현상 광도곡선 분석을 위한 인터랙티브 외계 행성 탐사 시뮬레이터">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="brand-container">
+      <span class="brand-icon">🪐</span>
+      <div class="brand-title">
+        <h1>외계 행성계 탐사 시뮬레이션</h1>
+        <p>Radial Velocity & Transit Light Curve Simulator</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Exoplanet Preset Selector -->
+      <div class="preset-select-wrapper">
+        <label for="presetSelect">탐사 대상:</label>
+        <select id="presetSelect" class="preset-dropdown">
+          <option value="custom">사용자 정의 (Custom)</option>
+        </select>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="playback-controls">
+        <button id="btnPlayPause" class="btn-icon" title="재생/일시정지">⏸</button>
+        <button id="btnResetPhase" class="btn-icon" title="궤도 리셋">🔄</button>
+        <select id="speedSelect" class="speed-select" title="시뮬레이션 속도">
+          <option value="0.25">0.25x</option>
+          <option value="0.5">0.5x</option>
+          <option value="1.0" selected>1.0x (표준)</option>
+          <option value="2.0">2.0x</option>
+          <option value="4.0">4.0x</option>
+        </select>
+      </div>
+
+      <!-- Compare Mode Toggle Button -->
+      <button id="btnCompare" class="btn-glow">📊 비교 모드</button>
+
+      <!-- Concept Info Button -->
+      <button id="btnInfoModal" class="btn-icon" title="탐사 원리 가이드">ℹ️ 원리 설명</button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="tab-navigation">
+    <button id="tabRvBtn" class="tab-btn active" data-tab="rv">
+      <span>🔭</span> 1. 시선속도법 (도플러 효과)
+    </button>
+    <button id="tabTransitBtn" class="tab-btn" data-tab="transit">
+      <span>🌕</span> 2. 식현상 (광도 변화 곡선)
+    </button>
+    <button id="tabMicrolensingBtn" class="tab-btn" data-tab="microlensing">
+      <span>🔍</span> 3. 미세중력렌즈 (광도 증폭 곡선)
+    </button>
+  </nav>
+
+  <!-- Main Dashboard View Area -->
+  <main class="dashboard-container">
+
+    <!-- PAGE 1: RADIAL VELOCITY METHOD -->
+    <div id="rvTabContent" class="tab-content active">
+      
+      <!-- Left Panel: Orbit Visualizer & Live Doppler Spectrum -->
+      <div class="panel-visual">
+        <div class="card-canvas">
+          <div class="card-header">
+            <div class="card-title">
+              <span>🌌 행성계 궤도 운동 및 시선 방향</span>
+              <span class="badge">공통 질량 중심(Barycenter) 계</span>
+            </div>
+            <span id="rvOrbitStatus" style="font-size: 0.78rem; color: var(--primary-cyan);">질량중심 회전 중</span>
+          </div>
+
+          <!-- Canvas 1: 2D Orbit View -->
+          <div class="canvas-wrapper">
+            <canvas id="orbitCanvas"></canvas>
+          </div>
+
+          <!-- Live Doppler Spectrum Bar -->
+          <div class="spectrum-wrapper">
+            <canvas id="spectrumCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Parameters & Real-time RV Graph -->
+      <div class="panel-controls-chart">
+
+        <!-- Real-time RV Chart Card (Horizontal Axis in Days) -->
+        <div class="card-canvas">
+          <div class="card-header">
+            <div class="card-title">
+              <span>📈 시선속도 변화 곡선 (\(v_r\) - 시간(일/Days) 그래프)</span>
+            </div>
+            <span id="rvAmplitudeText" style="font-size: 0.8rem; font-weight: 700; color: var(--primary-pink);">
+              진폭 K: -- m/s
+            </span>
+          </div>
+
+          <div class="chart-wrapper">
+            <canvas id="rvChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Interactive Sliders Card -->
+        <div class="card-canvas">
+          <div class="card-header">
+            <div class="card-title">⚙️ 외계 행성계 물리 조건 설정</div>
+          </div>
+
+          <div class="sliders-grid">
+            <!-- Planet Mass -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>행성 질량 (\(m_p\))</span>
+                <span id="valPlanetMass" class="slider-value">1.00 M_Jup</span>
+              </div>
+              <input type="range" id="inputPlanetMass" min="0.01" max="50.0" step="0.1" value="1.0">
+            </div>
+
+            <!-- Star Mass -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>항성 질량 (\(M_s\))</span>
+                <span id="valStarMass" class="slider-value">1.00 M_Sun</span>
+              </div>
+              <input type="range" id="inputStarMass" min="0.1" max="5.0" step="0.05" value="1.0">
+            </div>
+
+            <!-- Inclination Angle -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>시선방향과 궤도면 각도 (\(\theta\))</span>
+                <span id="valInclination" class="slider-value">0.0° (평행)</span>
+              </div>
+              <input type="range" id="inputInclination" min="0" max="90" step="0.5" value="0">
+            </div>
+
+            <!-- Semi-major Axis -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>궤도 반지름 (\(a\))</span>
+                <span id="valSemiMajor" class="slider-value">0.10 AU</span>
+              </div>
+              <input type="range" id="inputSemiMajor" min="0.01" max="2.0" step="0.01" value="0.10">
+            </div>
+
+            <!-- Eccentricity -->
+            <div class="slider-group" style="grid-column: span 2;">
+              <div class="slider-label">
+                <span>궤도 이심률 (\(e\))</span>
+                <span id="valEccentricity" class="slider-value">0.00</span>
+              </div>
+              <input type="range" id="inputEccentricity" min="0.0" max="0.75" step="0.01" value="0.0">
+            </div>
+          </div>
+
+          <!-- Formula & Summary Info Box -->
+          <div class="info-card" style="margin-top: 0.8rem;">
+            <strong>💡 물리 경향성 포인트:</strong>
+            <ul style="padding-left: 1.2rem; margin-top: 4px;">
+              <li>질량(\(m_p\)) 증가 시 파형의 <strong>높이(진폭)가 커지며</strong>, 각도(\(\theta \to 90^\circ\)) 조절 시 파형이 <strong>평평하게 평탄화</strong>됩니다.</li>
+              <li>반지름(\(a\))을 줄이면 <strong>파형이 촘촘해지고</strong>, 키우면 <strong>파형이 완만해집니다</strong>.</li>
+            </ul>
+            <div class="formula-box">
+              K = (2πG / P)^(1/3) × [m_p cos(θ) / (M_s + m_p)^(2/3)] | P^2 ∝ a^3 / (M_s + m_p)
+            </div>
+            <div class="stats-flex">
+              <div class="stat-item">
+                <span class="stat-title">공전 주기 (P)</span>
+                <span id="statPeriod" class="stat-value">11.6 일</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-title">항성 공전 속도 (K)</span>
+                <span id="statK" class="stat-value">28.4 m/s</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- PAGE 2: TRANSIT LIGHT CURVE METHOD -->
+    <div id="transitTabContent" class="tab-content">
+      
+      <!-- Left Panel: Observer Sky View Canvas -->
+      <div class="panel-visual">
+        <div class="card-canvas">
+          <div class="card-header">
+            <div class="card-title">
+              <span>🔭 관측자 시점 식현상 (Transit Sky View)</span>
+              <span class="badge">지상/우주망원경 직접 관측</span>
+            </div>
+            <span id="transitStatusText" style="font-size: 0.8rem; color: var(--primary-green);">식 진행 중</span>
+          </div>
+
+          <!-- Canvas 2: Transit Observer View -->
+          <div class="canvas-wrapper" style="height: 500px;">
+            <canvas id="transitCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Light Curve Chart & Transit Sliders -->
+      <div class="panel-controls-chart">
+
+        <!-- Real-time Light Curve Chart Card -->
+        <div class="card-canvas">
+          <div class="card-header">
+            <div class="card-title">
+              <span>📉 광도 변화 곡선 (Relative Flux - 시간(일/Days) 그래프)</span>
+            </div>
+            <span id="lightCurveDepthText" style="font-size: 0.8rem; font-weight: 700; color: var(--primary-green);">
+              식 깊이 ΔF: -- %
+            </span>
+          </div>
+
+          <div class="chart-wrapper">
+            <canvas id="lightCurveChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Sliders for Transit -->
+        <div class="card-canvas">
+          <div class="card-header">
+            <div class="card-title">⚙️ 식현상 조건 설정</div>
+          </div>
+
+          <div class="sliders-grid">
+            <!-- Planet Mass for Transit -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>행성 질량 (\(m_p\))</span>
+                <span id="valPlanetMassTransit" class="slider-value">1.00 M_Jup</span>
+              </div>
+              <input type="range" id="inputPlanetMassTransit" min="0.01" max="50.0" step="0.1" value="1.0">
+            </div>
+
+            <!-- Star Mass for Transit -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>항성 질량 (\(M_s\))</span>
+                <span id="valStarMassTransit" class="slider-value">1.00 M_Sun</span>
+              </div>
+              <input type="range" id="inputStarMassTransit" min="0.1" max="5.0" step="0.05" value="1.0">
+            </div>
+
+            <!-- Planet Radius -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>행성 반지름 (\(R_p\))</span>
+                <span id="valPlanetRadius" class="slider-value">1.00 R_Jup</span>
+              </div>
+              <input type="range" id="inputPlanetRadius" min="0.05" max="2.5" step="0.01" value="1.0">
+            </div>
+
+            <!-- Star Radius -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>항성 반지름 (\(R_s\))</span>
+                <span id="valStarRadius" class="slider-value">1.00 R_Sun</span>
+              </div>
+              <input type="range" id="inputStarRadius" min="0.1" max="3.0" step="0.05" value="1.0">
+            </div>
+
+            <!-- Inclination Angle (Up to 90 degrees) -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>시선방향과 궤도면 각도 (\(\theta\))</span>
+                <span id="valInclinationTransit" class="slider-value">0.0° (평행)</span>
+              </div>
+              <input type="range" id="inputInclinationTransit" min="0" max="90" step="0.5" value="0">
+            </div>
+
+            <!-- Semi-major Axis for Transit (Refined Step: 0.001 AU granularity) -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>궤도 반지름 (\(a\))</span>
+                <span id="valSemiMajorTransit" class="slider-value">0.100 AU</span>
+              </div>
+              <input type="range" id="inputSemiMajorTransit" min="0.005" max="1.000" step="0.001" value="0.100">
+            </div>
+          </div>
+
+          <!-- Formula & Summary Info Box -->
+          <div class="info-card" style="margin-top: 0.8rem;">
+            <strong>💡 식현상 동기화 포인트:</strong>
+            <ul style="padding-left: 1.2rem; margin-top: 4px;">
+              <li>행성이 실제 항성 원반 앞을 지나는 순간, 광도 곡선의 현재 커서가 <strong>실시간 U자형 딥 최저점</strong>을 통과합니다.</li>
+              <li>질량(\(M_s, m_p\))과 궤도 반지름(\(a\))을 조절하면 케플러 제3법칙에 의해 <strong>공전 주기(\(P\))</strong>가 실시간으로 변화합니다.</li>
+            </ul>
+            <div class="formula-box">
+              ΔF = (R_p / R_s)² | P² ∝ a³ / (M_s + m_p) | b = (a / R_s) × sin(θ)
+            </div>
+            <div class="stats-flex">
+              <div class="stat-item">
+                <span class="stat-title">공전 주기 (P)</span>
+                <span id="statPeriodTransit" class="stat-value">11.6 일</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-title">최대 식 깊이 (ΔF)</span>
+                <span id="statTransitDepth" class="stat-value">1.008 %</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-title">임팩트 파라미터 (b)</span>
+                <span id="statImpactParam" class="stat-value">0.00</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- PAGE 3: GRAVITATIONAL MICROLENSING METHOD -->
+    <div id="microlensingTabContent" class="tab-content">
+      
+      <!-- Left Panel: Observer Sky View Canvas -->
+      <div class="panel-visual">
+        <div class="card-canvas">
+          <div class="card-header">
+            <div class="card-title">
+              <span>🔭 미세중력렌즈 천구 관측 뷰 (Gravitational Lensing View)</span>
+              <span class="badge">시공간 굴절 및 집광 효과</span>
+            </div>
+            <span id="microlensingStatusText" style="font-size: 0.8rem; color: var(--primary-green);">렌즈계 통과 중</span>
+          </div>
+
+          <!-- Canvas 3: Microlensing Sky View -->
+          <div class="canvas-wrapper" style="height: 500px;">
+            <canvas id="microlensingCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Light Curve Chart & Microlensing Sliders -->
+      <div class="panel-controls-chart">
+
+        <!-- Real-time Microlensing Light Curve Chart Card -->
+        <div class="card-canvas">
+          <div class="card-header">
+            <div class="card-title">
+              <span>📈 미세중력렌즈 광도 증폭 곡선 (Magnification - 시간(일/Days) 그래프)</span>
+            </div>
+            <span id="microlensingMaxAText" style="font-size: 0.8rem; font-weight: 700; color: var(--primary-green);">
+              최대 증폭 A: -- 배
+            </span>
+          </div>
+
+          <div class="chart-wrapper">
+            <canvas id="microlensingChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Sliders for Microlensing -->
+        <div class="card-canvas">
+          <div class="card-header">
+            <div class="card-title">⚙️ 미세중력렌즈 물리 조건 설정</div>
+          </div>
+
+          <div class="sliders-grid">
+            <!-- Planet Mass for Microlensing -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>외계 행성 질량 (\(m_p\))</span>
+                <span id="valPlanetMassMicro" class="slider-value">3.00 M_Jup</span>
+              </div>
+              <input type="range" id="inputPlanetMassMicro" min="0.1" max="20.0" step="0.1" value="3.0">
+            </div>
+
+            <!-- Lens Star Mass -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>렌즈 별 질량 (\(M_L\))</span>
+                <span id="valLensStarMass" class="slider-value">0.50 M_Sun</span>
+              </div>
+              <input type="range" id="inputLensStarMass" min="0.1" max="2.0" step="0.05" value="0.5">
+            </div>
+
+            <!-- Impact Parameter u0 -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>최소 접근 거리 (\(u_0\))</span>
+                <span id="valImpactParamMicro" class="slider-value">0.20 θ_E</span>
+              </div>
+              <input type="range" id="inputImpactParamMicro" min="0.05" max="0.60" step="0.01" value="0.20">
+            </div>
+
+            <!-- Planet Projected Separation s -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>행성-별 분리 거리 (\(s\))</span>
+                <span id="valPlanetSepMicro" class="slider-value">1.05 θ_E</span>
+              </div>
+              <input type="range" id="inputPlanetSepMicro" min="0.60" max="1.60" step="0.01" value="1.05">
+            </div>
+
+            <!-- Planet Position Angle phi -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>행성 위치각 (\(\phi\))</span>
+                <span id="valPlanetPhiMicro" class="slider-value">45.0°</span>
+              </div>
+              <input type="range" id="inputPlanetPhiMicro" min="0" max="360" step="1.0" value="45.0">
+            </div>
+
+            <!-- Einstein Crossing Time tE -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>아인슈타인 교차 시간 (\(t_E\))</span>
+                <span id="valCrossingTimeMicro" class="slider-value">30.0 일</span>
+              </div>
+              <input type="range" id="inputCrossingTimeMicro" min="15.0" max="50.0" step="1.0" value="30.0">
+            </div>
+          </div>
+
+          <!-- Formula & Summary Info Box -->
+          <div class="info-card" style="margin-top: 0.8rem;">
+            <strong>💡 지구과학 핵심 탐사 포인트:</strong>
+            <ul style="padding-left: 1.2rem; margin-top: 4px;">
+              <li><strong>행성 질량과 광도 피크</strong>: 행성 질량(\(m_p\))이 클수록 중력 섭동이 강해져 **미세 피크의 높이와 두께가 뚜렷하게 증가**합니다.</li>
+              <li><strong>공전 궤도면 경사각 무관</strong>: 궤도면이 시선 방향과 나란하지 않아도 행성을 발견할 수 있습니다.</li>
+              <li><strong>원거리·저질량 행성 탐사 유리</strong>: 중심별에서 멀리 떨어진 행성이나 작은 질량의 행성도 검출할 수 있습니다.</li>
+              <li><strong>일회성 관측</strong>: 렌즈 현상은 우연히 배경별 앞을 지나갈 때만 발생하므로 재관측(주기성 확인)이 불가능합니다.</li>
+            </ul>
+            <div class="formula-box">
+              A(u) = (u² + 2) / [u √(u² + 4)] | q = m_p / M_L | θ_E ∝ √(M_L)
+            </div>
+            <div class="stats-flex">
+              <div class="stat-item">
+                <span class="stat-title">최대 광도 증폭률 (A_max)</span>
+                <span id="statMaxMagnification" class="stat-value">4.12 배</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-title">행성 섭동 피크 (ΔA)</span>
+                <span id="statPlanetDeltaA" class="stat-value">+0.85 배</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-title">피크 발생 시점</span>
+                <span id="statPlanetPeakTime" class="stat-value">+4.2 일</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Physics Info Modal -->
+  <div id="infoModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔭 외계 행성 탐사 원리학 (지구과학 기준)</h3>
+        <button id="btnCloseModal" class="close-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4>1. 시선속도법 (Radial Velocity Method / 도플러 효과)</h4>
+        <p>행성이 항성을 돌 때, 항성도 공통 질량 중심을 기준으로 미세하게 회전합니다. 관측자 쪽으로 다가올 때 항성의 스펙트럼 흡수선이 <strong>청색 편이(Blueshift)</strong>를 일으키고, 멀어질 때 <strong>적색 편이(Redshift)</strong>를 일으킵니다.</p>
+
+        <h4>2. 식현상법 (Transit Method / 광도변화)</h4>
+        <p>행성이 관측자와 항성 사이를 지나갈 때 항성의 빛 일부를 가려 전체 광도가 일시적으로 감소합니다. 감소 폭 \(\Delta F = (R_p / R_s)^2\)을 측정하여 행성의 크기를 정밀하게 측정할 수 있습니다.</p>
+
+        <h4>3. 미세중력렌즈법 (Gravitational Microlensing Method)</h4>
+        <p>먼 배경별 앞을 행성을 거느린 전경별(렌즈별)이 지나갈 때, 렌즈별의 중력으로 시공간이 휘어져 배경별의 빛이 집광되면서 밝아집니다. 이때 렌즈별 주위의 행성 중력에 의해 <strong>밝기 곡선에 짧고 날카로운 미세 피크(Anomaly Peak)</strong>가 덧붙여 나타나 외계 행성을 발견합니다. 궤도 경사각에 무관하며 중심별에서 먼 행성도 검출할 수 있으나 일회성 현상이라는 특징이 있습니다.</p>
+
+        <h4>4. 시선방향과 공전궤도면이 이루는 각도 (\(\theta\))</h4>
+        <ul>
+          <li><strong>\(\theta = 0^\circ\) (시선방향과 평행 / Edge-on)</strong>: 시선속도 변화 <strong>최대</strong>, 식현상 발생.</li>
+          <li><strong>\(\theta = 90^\circ\) (시선방향과 수직 / Face-on)</strong>: 시선속도 변화 <strong>0</strong>, 식현상 미발생 (단, 미세중력렌즈는 검출 가능).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load JavaScript Modules -->
+  <script src="js/physics.js"></script>
+  <script src="js/presets.js"></script>
+  <script src="js/orbitView.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/microlensing.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
