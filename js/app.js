@@ -137,6 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('transitTabContent').classList.toggle('active', activeTab === 'transit');
       document.getElementById('microlensingTabContent').classList.toggle('active', activeTab === 'microlensing');
 
+      if (activeTab === 'transit') {
+        updatePhysicsFromInputs(inputSemiMajorTransit);
+      } else if (activeTab === 'rv') {
+        updatePhysicsFromInputs(inputSemiMajor);
+      }
+
       setTimeout(() => {
         rvOrbitRenderer.resizeCanvas();
         rvChartRenderer.resizeCanvas();
@@ -164,7 +170,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputPlanetRadius) inputPlanetRadius.value = p.rPlanetJup;
     if (inputStarRadius) inputStarRadius.value = p.rStarSun;
     if (inputInclinationTransit) inputInclinationTransit.value = p.inclinationDeg;
-    if (inputSemiMajorTransit) inputSemiMajorTransit.value = p.semiMajorAxisAU;
+    if (inputSemiMajorTransit) {
+      const minT = parseFloat(inputSemiMajorTransit.min || 0.005);
+      const maxT = parseFloat(inputSemiMajorTransit.max || 0.050);
+      inputSemiMajorTransit.value = Math.max(minT, Math.min(maxT, p.semiMajorAxisAU));
+    }
 
     updatePhysicsFromInputs();
   }
@@ -226,8 +236,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputStarMassTransit) inputStarMassTransit.value = mS;
     if (inputInclination) inputInclination.value = inc;
     if (inputInclinationTransit) inputInclinationTransit.value = inc;
-    if (inputSemiMajor) inputSemiMajor.value = a;
-    if (inputSemiMajorTransit) inputSemiMajorTransit.value = a;
+
+    if (changedSlider === inputSemiMajorTransit && inputSemiMajorTransit) {
+      inputSemiMajorTransit.value = a;
+      if (inputSemiMajor && a >= parseFloat(inputSemiMajor.min) && a <= parseFloat(inputSemiMajor.max)) {
+        inputSemiMajor.value = a;
+      }
+    } else if (changedSlider === inputSemiMajor && inputSemiMajor) {
+      inputSemiMajor.value = a;
+      if (inputSemiMajorTransit) {
+        const minT = parseFloat(inputSemiMajorTransit.min);
+        const maxT = parseFloat(inputSemiMajorTransit.max);
+        if (a >= minT && a <= maxT) {
+          inputSemiMajorTransit.value = a;
+        }
+      }
+    } else {
+      if (activeTab === 'transit' && inputSemiMajorTransit) {
+        inputSemiMajorTransit.value = a;
+      } else if (activeTab === 'rv' && inputSemiMajor) {
+        inputSemiMajor.value = a;
+      }
+    }
 
     const getIncLabel = (deg) => {
       if (deg === 0) return '0.0° (평행 - 최대 시선속도)';
@@ -240,13 +270,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (valStarMass) valStarMass.textContent = `${mS.toFixed(2)} M_Sun`;
     if (valStarMassTransit) valStarMassTransit.textContent = `${mS.toFixed(2)} M_Sun`;
     if (valInclination) valInclination.textContent = getIncLabel(inc);
-    if (valSemiMajor) valSemiMajor.textContent = `${a.toFixed(2)} AU`;
     if (valEccentricity) valEccentricity.textContent = `${ecc.toFixed(2)}`;
+
+    const rvA = inputSemiMajor ? parseFloat(inputSemiMajor.value) : a;
+    const transitA = inputSemiMajorTransit ? parseFloat(inputSemiMajorTransit.value) : a;
+    if (valSemiMajor) valSemiMajor.textContent = `${rvA.toFixed(2)} AU`;
+    if (valSemiMajorTransit) valSemiMajorTransit.textContent = `${transitA.toFixed(4)} AU`;
 
     if (valPlanetRadius) valPlanetRadius.textContent = `${rP.toFixed(2)} R_Jup`;
     if (valStarRadius) valStarRadius.textContent = `${rS.toFixed(2)} R_Sun`;
     if (valInclinationTransit) valInclinationTransit.textContent = getIncLabel(inc);
-    if (valSemiMajorTransit) valSemiMajorTransit.textContent = `${a.toFixed(3)} AU`;
 
     physics.updateParams({
       mStarSun: mS,
