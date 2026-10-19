@@ -483,11 +483,13 @@ class OrbitViewRenderer {
     // 최대 가용 편이 픽셀 (스펙트럼 바 폭의 8%)
     const maxVisualShiftPx = barWidth * 0.08; 
 
-    // 시선속도 v_r 및 최대값 K의 크기에 정비례하여 스펙트럼 선의 편이량(shiftPx) 계산:
-    // 1) v_r = 0 (시선속도가 0이거나 궤도 경사각이 90도일 때) -> shiftPx = 0 (변이 전혀 없음, 완전 정지)
-    // 2) 시선속도의 최대값(K)이 클수록 편이량이 크게 움직이고, K가 작을수록 편이량이 미세하게만 움직임!
-    const vScale = 75.0; // 기준 시선속도 스케일 (m/s)
-    const shiftPx = Math.tanh(v_r / vScale) * maxVisualShiftPx;
+    // 시선속도 v_r 및 최대값 K의 크기에 비례하여 스펙트럼 선의 편이량(shiftPx) 계산:
+    // 1) 시선속도 최대값 K에 따라 최대 편이 진폭(amplitudePx) 결정 (K가 클수록 큰 편이, K=0이면 0)
+    // 2) 순간 편이량은 (v_r / K)의 비율에 정비례하여 청색편이/적색편이 전 구간에서 포화 없이 연속적이고 서서히 변화
+    // 3) v_r = 0 (경사각 90도 또는 시선속도 0 지점) -> shiftPx = 0 (스펙트럼 선 변이 없음, 정지)
+    const kScale = 80.0; // 기준 시선속도 스케일 (m/s)
+    const amplitudePx = Math.tanh(K / kScale) * maxVisualShiftPx;
+    const shiftPx = K > 0 ? (v_r / K) * amplitudePx : 0;
 
     const vrColor = v_r < -0.1 ? '#00e5ff' : (v_r > 0.1 ? '#ff3366' : '#ffffff');
     ctx.strokeStyle = '#000000';
@@ -502,7 +504,7 @@ class OrbitViewRenderer {
       ctx.lineTo(shiftedX, bar2Y + barHeight);
       ctx.stroke();
 
-      if (Math.abs(shiftPx) > 1) {
+      if (Math.abs(shiftPx) > 0.5) {
         ctx.save();
         ctx.strokeStyle = vrColor;
         ctx.lineWidth = 1;

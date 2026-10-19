@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeTab = 'rv';
   let isCompareMode = false;
   let compareData = null;
+  let comparePhysics = null;
 
   // Cache DOM Elements
   const btnPlayPause = document.getElementById('btnPlayPause');
@@ -347,9 +348,11 @@ document.addEventListener('DOMContentLoaded', () => {
       btnCompare.classList.toggle('active', isCompareMode);
 
       if (isCompareMode) {
-        compareData = physics.generateFullOrbitData();
+        comparePhysics = new PhysicsEngine(Object.assign({}, physics.params));
+        compareData = comparePhysics.generateFullOrbitData();
         btnCompare.textContent = '📊 비교 취소';
       } else {
+        comparePhysics = null;
         compareData = null;
         btnCompare.textContent = '📊 비교 모드';
       }
@@ -400,12 +403,11 @@ document.addEventListener('DOMContentLoaded', () => {
         compareData
       );
     } else if (activeTab === 'transit') {
-      const maxTransitDays = fullData.lightCurveTimeSpanDays;
       if (isPlaying) {
         const daysDelta = (dt / 8.0) * animSpeed * physics.periodDays;
-        transitTimeDays = (transitTimeDays + daysDelta) % maxTransitDays;
+        transitTimeDays += daysDelta;
       }
-      const transitPhase = (transitTimeDays / physics.periodDays) % 1.0;
+      const transitPhase = ((transitTimeDays / physics.periodDays) % 1.0 + 1.0) % 1.0;
       const transitState = physics.getStateAtPhase(transitPhase);
 
       if (transitStatusText) {
@@ -429,15 +431,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
+      // 동적 슬라이딩 윈도우 계산: 2.5주기 폭을 유지하며 1.8주기 이후 시간축이 우측으로 계속 전진
+      const windowSpanDays = physics.periodDays * 2.5;
+      const startDays = transitTimeDays < physics.periodDays * 1.8 
+        ? 0.0 
+        : transitTimeDays - physics.periodDays * 1.8;
+      const endDays = startDays + windowSpanDays;
+      const windowData = physics.generateLightCurveWindow(startDays, endDays);
+
+      let compareWindowData = null;
+      if (isCompareMode && comparePhysics) {
+        compareWindowData = comparePhysics.generateLightCurveWindow(startDays, endDays);
+      }
+
       transitOrbitRenderer.render(physics, transitState);
       lightCurveChartRenderer.renderLightCurve(
-        fullData.lightCurveData, 
+        windowData, 
         transitTimeDays, 
         fullData.maxDepthPercent, 
         fullData.hasTransit, 
-        fullData.periodDays, 
-        maxTransitDays, 
-        compareData
+        physics.periodDays, 
+        startDays, 
+        endDays, 
+        compareWindowData ? { lightCurveData: compareWindowData } : null
       );
     } else if (activeTab === 'microlensing') {
       const halfSpan = microPhysics.tSpanDays / 2;

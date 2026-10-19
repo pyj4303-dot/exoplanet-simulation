@@ -186,7 +186,7 @@ class ChartRenderer {
   /**
    * Render Transit Light Curve Graph (Screen 2)
    */
-  renderLightCurve(lightCurveData, tProgressDays, maxDepthPercent, hasTransit, periodDays, timeSpanDays, compareData = null) {
+  renderLightCurve(lightCurveData, tProgressDays, maxDepthPercent, hasTransit, periodDays, startDays, endDays, compareData = null) {
     if (!this.canvas || !this.ctx || !lightCurveData || !lightCurveData.length) return;
     const ctx = this.ctx;
     const w = this.canvas.width;
@@ -203,6 +203,10 @@ class ChartRenderer {
     const plotW = w - padLeft - padRight;
     const plotH = h - padTop - padBottom;
 
+    const start = (typeof endDays === 'number') ? startDays : 0;
+    const end = (typeof endDays === 'number') ? endDays : startDays;
+    const windowSpanDays = Math.max(0.001, end - start);
+
     const minFluxNeeded = lightCurveData.reduce((min, pt) => Math.min(min, pt.flux), 1.0);
     const minFluxScale = Math.min(0.985, minFluxNeeded - 0.003);
     const maxFluxScale = 1.002;
@@ -214,40 +218,29 @@ class ChartRenderer {
     };
 
     // Draw Light Curve Grid with Days
-    this.drawLightCurveGridInDays(ctx, padLeft, padTop, plotW, plotH, minFluxScale, maxFluxScale, timeSpanDays);
+    this.drawLightCurveGridInDays(ctx, padLeft, padTop, plotW, plotH, minFluxScale, maxFluxScale, start, end);
 
-    // Draw Period P vertical line 1 (at t = P)
-    const p1X = padLeft + (periodDays / timeSpanDays) * plotW;
-    if (p1X >= padLeft && p1X <= padLeft + plotW) {
-      ctx.strokeStyle = 'rgba(255, 215, 0, 0.7)';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(p1X, padTop);
-      ctx.lineTo(p1X, padTop + plotH);
-      ctx.stroke();
+    // Draw Period P vertical lines for all n*P within [start, end]
+    const minN = Math.max(1, Math.ceil((start - 0.001) / periodDays));
+    const maxN = Math.floor((end + 0.001) / periodDays);
+    ctx.strokeStyle = 'rgba(255, 215, 0, 0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
 
-      ctx.fillStyle = '#ffd700';
-      ctx.font = 'bold 11px sans-serif';
-      const pText = periodDays >= 100 ? `1주기 (P = ${periodDays.toFixed(0)}일)` : `1주기 (P = ${periodDays.toFixed(1)}일)`;
-      ctx.fillText(pText, Math.min(p1X + 5, w - 130), padTop + 16);
-    }
+    for (let n = minN; n <= maxN; n++) {
+      const tP = n * periodDays;
+      const pX = padLeft + ((tP - start) / windowSpanDays) * plotW;
+      if (pX >= padLeft && pX <= padLeft + plotW) {
+        ctx.beginPath();
+        ctx.moveTo(pX, padTop);
+        ctx.lineTo(pX, padTop + plotH);
+        ctx.stroke();
 
-    // Draw Period P vertical line 2 (at t = 2P)
-    const p2X = padLeft + ((2 * periodDays) / timeSpanDays) * plotW;
-    if (p2X >= padLeft && p2X <= padLeft + plotW) {
-      ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(p2X, padTop);
-      ctx.lineTo(p2X, padTop + plotH);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText('2주기 (2P)', Math.min(p2X + 5, w - 80), padTop + 16);
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 11px sans-serif';
+        const pText = `${n}주기 (${n}P)`;
+        ctx.fillText(pText, Math.min(pX + 5, w - 85), padTop + 16);
+      }
     }
     ctx.setLineDash([]);
 
@@ -258,9 +251,8 @@ class ChartRenderer {
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
 
-      const compTimeSpan = compareData.lightCurveTimeSpanDays || compareData.timeSpanDays || timeSpanDays;
       compareData.lightCurveData.forEach((pt, i) => {
-        const x = padLeft + (pt.timeDays / compTimeSpan) * plotW;
+        const x = padLeft + ((pt.timeDays - start) / windowSpanDays) * plotW;
         const y = getFluxY(pt.flux);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
@@ -277,7 +269,7 @@ class ChartRenderer {
     ctx.shadowBlur = 8;
 
     lightCurveData.forEach((pt, i) => {
-      const x = padLeft + (pt.timeDays / timeSpanDays) * plotW;
+      const x = padLeft + ((pt.timeDays - start) / windowSpanDays) * plotW;
       const y = getFluxY(pt.flux);
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
@@ -286,7 +278,8 @@ class ChartRenderer {
     ctx.shadowBlur = 0;
 
     // Current Time Indicator Line & White Dot
-    const currentX = padLeft + (tProgressDays / timeSpanDays) * plotW;
+    const currentNorm = (tProgressDays - start) / windowSpanDays;
+    const currentX = padLeft + Math.max(0, Math.min(1, currentNorm)) * plotW;
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([3, 3]);
@@ -297,7 +290,7 @@ class ChartRenderer {
     ctx.setLineDash([]);
 
     const dataLen = lightCurveData.length;
-    const currentIdx = Math.min(dataLen - 1, Math.max(0, Math.floor((tProgressDays / timeSpanDays) * dataLen)));
+    const currentIdx = Math.min(dataLen - 1, Math.max(0, Math.round(currentNorm * (dataLen - 1))));
     const currentPt = lightCurveData[currentIdx] || lightCurveData[0];
     const currentY = getFluxY(currentPt.flux);
 
@@ -313,10 +306,10 @@ class ChartRenderer {
     // Value Tooltip on Chart
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 12px sans-serif';
-    const dayStr = currentPt.timeDays >= 100 ? currentPt.timeDays.toFixed(0) : currentPt.timeDays.toFixed(1);
+    const dayStr = tProgressDays >= 100 ? tProgressDays.toFixed(0) : tProgressDays.toFixed(1);
     const fluxPctStr = (currentPt.flux * 100).toFixed(3);
     const fluxValText = `t: ${dayStr}일 | 광도: ${fluxPctStr}%`;
-    ctx.fillText(fluxValText, Math.min(currentX + 10, w - 170), Math.max(padTop + 32, currentY - 10));
+    ctx.fillText(fluxValText, Math.min(Math.max(currentX + 10, padLeft + 10), w - 170), Math.max(padTop + 32, currentY - 10));
 
     // Annotations & Transit Status
     if (!hasTransit) {
@@ -394,7 +387,7 @@ class ChartRenderer {
     ctx.fillText('시간 (일 / Days)', x + w / 2 - 35, y + h + 32);
   }
 
-  drawLightCurveGridInDays(ctx, x, y, w, h, minFlux, maxFlux, timeSpanDays) {
+  drawLightCurveGridInDays(ctx, x, y, w, h, minFlux, maxFlux, startDays, endDays) {
     ctx.fillStyle = 'rgba(12, 17, 34, 0.7)';
     ctx.fillRect(x, y, w, h);
 
@@ -424,12 +417,16 @@ class ChartRenderer {
     ctx.lineTo(x + w, y1);
     ctx.stroke();
 
+    const start = (typeof endDays === 'number') ? startDays : 0;
+    const end = (typeof endDays === 'number') ? endDays : startDays;
+    const spanDays = end - start;
+
     const numXSteps = 4;
     for (let i = 0; i <= numXSteps; i++) {
       const gridX = x + (w / numXSteps) * i;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
       ctx.font = '10px sans-serif';
-      const dayVal = (timeSpanDays / numXSteps) * i;
+      const dayVal = start + (spanDays / numXSteps) * i;
       const dayStr = dayVal >= 100 ? `${dayVal.toFixed(0)}일` : `${dayVal.toFixed(1)}일`;
       ctx.fillText(dayStr, gridX - 12, y + h + 16);
     }

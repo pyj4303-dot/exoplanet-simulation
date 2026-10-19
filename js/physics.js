@@ -224,6 +224,19 @@ class PhysicsEngine {
       hasTransit: hasTransit
     };
   }
+
+  generateLightCurveWindow(startDays, endDays, numPoints = 600) {
+    const lightCurveData = [];
+    const P_days = this.periodDays;
+    const span = endDays - startDays;
+    for (let i = 0; i <= numPoints; i++) {
+      const tDays = startDays + (i / numPoints) * span;
+      const phase = ((tDays / P_days) % 1.0 + 1.0) % 1.0;
+      const state = this.getStateAtPhase(phase);
+      lightCurveData.push({ timeDays: tDays, phase, flux: state.relativeFlux });
+    }
+    return lightCurveData;
+  }
 }
 
 window.PhysicsEngine = PhysicsEngine;
