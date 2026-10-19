@@ -473,10 +473,21 @@ class OrbitViewRenderer {
       ctx.stroke();
     });
 
-    const v_r = state ? state.radialVelocity : 0;
-    const K = state ? state.K : 1;
+    let v_r = state ? state.radialVelocity : 0;
+    let K = state ? state.K : 0;
+
+    // 부동소수점 오차 방지 (경사각 90도 또는 속도 0 부근)
+    if (Math.abs(v_r) < 0.005) v_r = 0;
+    if (Math.abs(K) < 0.005) K = 0;
+
+    // 최대 가용 편이 픽셀 (스펙트럼 바 폭의 8%)
     const maxVisualShiftPx = barWidth * 0.08; 
-    const shiftPx = K > 0 ? (v_r / K) * maxVisualShiftPx : 0;
+
+    // 시선속도 v_r 및 최대값 K의 크기에 정비례하여 스펙트럼 선의 편이량(shiftPx) 계산:
+    // 1) v_r = 0 (시선속도가 0이거나 궤도 경사각이 90도일 때) -> shiftPx = 0 (변이 전혀 없음, 완전 정지)
+    // 2) 시선속도의 최대값(K)이 클수록 편이량이 크게 움직이고, K가 작을수록 편이량이 미세하게만 움직임!
+    const vScale = 75.0; // 기준 시선속도 스케일 (m/s)
+    const shiftPx = Math.tanh(v_r / vScale) * maxVisualShiftPx;
 
     const vrColor = v_r < -0.1 ? '#00e5ff' : (v_r > 0.1 ? '#ff3366' : '#ffffff');
     ctx.strokeStyle = '#000000';
@@ -506,9 +517,9 @@ class OrbitViewRenderer {
 
     const absVr = Math.abs(v_r).toFixed(1);
     let shiftText = `시선속도: ${v_r >= 0 ? '+' : ''}${absVr} m/s`;
-    let typeText = '변화 없음';
-    if (v_r < -0.5) typeText = '청색 편이 (Blueshift - 다가옴)';
-    else if (v_r > 0.5) typeText = '적색 편이 (Redshift - 멀어짐)';
+    let typeText = '변화 없음 (시선속도 0)';
+    if (v_r < -0.1) typeText = '청색 편이 (Blueshift - 다가옴)';
+    else if (v_r > 0.1) typeText = '적색 편이 (Redshift - 멀어짐)';
 
     ctx.fillStyle = vrColor;
     ctx.font = 'bold 11px sans-serif';

@@ -47,8 +47,8 @@ class PhysicsEngine {
     this.a = this.semiMajorAxisAU * CONSTANTS.AU;
 
     this.incRadUser = (this.inclinationDeg * Math.PI) / 180;
-    this.sinIncFactor = Math.cos(this.incRadUser); // Factor for line-of-sight projection
-    this.cosIncFactor = Math.sin(this.incRadUser); // Perpendicular projection factor
+    this.sinIncFactor = Math.abs(this.inclinationDeg - 90) < 1e-4 ? 0 : Math.cos(this.incRadUser); // Factor for line-of-sight projection
+    this.cosIncFactor = Math.abs(this.inclinationDeg - 0) < 1e-4 ? 0 : Math.sin(this.incRadUser); // Perpendicular projection factor
 
     this.ecc = Math.max(0, Math.min(0.85, this.eccentricity));
     this.omegaRad = (this.argumentOfPeriastronDeg * Math.PI) / 180;
