@@ -11,7 +11,6 @@ class ChartRenderer {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
-    this.compareDataset = null;
 
     this.resizeCanvas();
     window.addEventListener('resize', () => this.resizeCanvas());
@@ -23,14 +22,6 @@ class ChartRenderer {
       this.canvas.width = rect.width * (window.devicePixelRatio || 1);
       this.canvas.height = rect.height * (window.devicePixelRatio || 1);
     }
-  }
-
-  setCompareDataset(dataset) {
-    this.compareDataset = dataset;
-  }
-
-  clearCompareDataset() {
-    this.compareDataset = null;
   }
 
   /**
@@ -51,7 +42,7 @@ class ChartRenderer {
   /**
    * Render Radial Velocity Graph (100% Aligned with 2D Orbit View)
    */
-  renderRadialVelocity(rvData, currentPhase, K, periodDays, timeSpanDays, compareRvData = null) {
+  renderRadialVelocity(rvData, currentPhase, K, periodDays, timeSpanDays) {
     if (!this.canvas || !this.ctx || !rvData || !rvData.length) return;
     const ctx = this.ctx;
     const w = this.canvas.width;
@@ -69,10 +60,7 @@ class ChartRenderer {
     const plotH = h - padTop - padBottom;
     const centerY = padTop + plotH / 2;
 
-    let maxYScale = this.getNiceYScale(K);
-    if (compareRvData && compareRvData.K) {
-      maxYScale = Math.max(maxYScale, this.getNiceYScale(compareRvData.K));
-    }
+    const maxYScale = this.getNiceYScale(K);
 
     // Grid lines & X-Axis in Days
     this.drawGridInDays(ctx, padLeft, padTop, plotW, plotH, centerY, maxYScale, '시선속도 v_r (m/s)', timeSpanDays);
@@ -96,25 +84,6 @@ class ChartRenderer {
       ctx.fillRect(Math.min(pX + 4, w - pTextW - 14), padTop + 4, pTextW + 8, 20);
       ctx.fillStyle = '#ffd700';
       ctx.fillText(pText, Math.min(pX + 8, w - pTextW - 10), padTop + 18);
-    }
-
-    // Draw Compare Dataset (if enabled)
-    if (compareRvData && compareRvData.rvData && compareRvData.rvData.length) {
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 170, 0, 0.45)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-
-      const compTimeSpan = compareRvData.rvTimeSpanDays || compareRvData.timeSpanDays || timeSpanDays;
-      compareRvData.rvData.forEach((pt, i) => {
-        const x = padLeft + (pt.timeDays / compTimeSpan) * plotW;
-        const normY = Math.max(-1.1, Math.min(1.1, pt.v_r / maxYScale));
-        const y = centerY - normY * (plotH / 2);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-      ctx.setLineDash([]);
     }
 
     // Draw Main RV Curve directly from physics rvData
@@ -208,7 +177,7 @@ class ChartRenderer {
   /**
    * Render Transit Light Curve Graph (Screen 2)
    */
-  renderLightCurve(lightCurveData, tProgressDays, maxDepthPercent, hasTransit, periodDays, startDays, endDays, compareData = null) {
+  renderLightCurve(lightCurveData, tProgressDays, maxDepthPercent, hasTransit, periodDays, startDays, endDays) {
     if (!this.canvas || !this.ctx || !lightCurveData || !lightCurveData.length) return;
     const ctx = this.ctx;
     const w = this.canvas.width;
@@ -268,23 +237,6 @@ class ChartRenderer {
       }
     }
     ctx.setLineDash([]);
-
-    // Draw Compare Dataset
-    if (compareData && compareData.lightCurveData && compareData.lightCurveData.length) {
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 170, 0, 0.45)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-
-      compareData.lightCurveData.forEach((pt, i) => {
-        const x = padLeft + ((pt.timeDays - start) / windowSpanDays) * plotW;
-        const y = getFluxY(pt.flux);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
 
     // Draw Main Light Curve
     ctx.beginPath();
