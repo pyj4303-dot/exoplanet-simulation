@@ -78,11 +78,23 @@ class OrbitViewRenderer {
 
     this.drawStars(ctx, width, height);
 
+    const splitY = Math.round(height * 0.36);
+
     if (this.viewMode === 'orbit') {
-      this.renderBarycentricOrbit(ctx, width, height, engine, state);
+      this.renderRVSideProfileView(ctx, 0, 0, width, splitY, engine, state);
+      this.renderBarycentricOrbit(ctx, 0, splitY, width, height - splitY, engine, state);
     } else {
-      this.renderTransitObserverView(ctx, width, height, engine, state);
+      this.renderTransitSideProfileView(ctx, 0, 0, width, splitY, engine, state);
+      this.renderTransitObserverView(ctx, 0, splitY, width, height - splitY, engine, state);
     }
+
+    // Horizontal Section Divider Line
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, splitY);
+    ctx.lineTo(width, splitY);
+    ctx.stroke();
 
     ctx.restore();
 
@@ -104,15 +116,455 @@ class OrbitViewRenderer {
     }
   }
 
-  renderBarycentricOrbit(ctx, width, height, engine, state) {
-    const centerX = width / 2;
-    const centerY = height / 2;
+  /**
+   * Section 1: Side Profile View for Radial Velocity (시선 방향 3차원 관측 기하도)
+   */
+  renderRVSideProfileView(ctx, x, y, w, h, engine, state) {
+    ctx.save();
+
+    // Section Header
+    ctx.fillStyle = 'rgba(0, 229, 255, 0.95)';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillText('📐 [1] 시선 방향 관측 기하도 (Side Profile View) : 궤도 경사각(i)과 도플러 효과', x + 16, y + 22);
+
+    const centerY = y + h * 0.58;
+    const observerX = x + w * 0.13;
+    const systemX = x + w * 0.72;
+
+    // 1. Line of Sight Reference Axis (시선 방향 기준선)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(observerX, centerY);
+    ctx.lineTo(systemX + 45, centerY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 2. Dynamic Doppler Light Waves propagating from star towards observer (지구로 전파되는 도플러 빛 파동)
+    const vr = state ? state.radialVelocity : 0;
+    const isBlue = vr < -0.1;
+    const isRed = vr > 0.1;
+    const waveColor = isBlue ? '#00e5ff' : (isRed ? '#ff3366' : '#cbd5e1');
+    const waveGlow = isBlue ? 'rgba(0, 229, 255, 0.6)' : (isRed ? 'rgba(255, 51, 102, 0.6)' : 'rgba(255, 255, 255, 0.3)');
+
+    const waveK = state && state.K > 0 ? Math.min(1.0, Math.abs(vr) / (state.K * 1.2)) : 0;
+    const wavelength = isBlue ? Math.max(10, 18 - 8 * waveK) : (isRed ? 18 + 14 * waveK : 18);
+    const waveAmp = 6;
+    const nowSec = performance.now() / 1000;
+    const wavePhase = (nowSec * 50) % (wavelength * 2);
+
+    ctx.save();
+    ctx.strokeStyle = waveColor;
+    ctx.lineWidth = 1.8;
+    ctx.shadowColor = waveGlow;
+    ctx.shadowBlur = isBlue || isRed ? 8 : 2;
+
+    const waveStartX = systemX - 25;
+    const waveEndX = observerX + 22;
+    ctx.beginPath();
+    for (let px = waveStartX; px >= waveEndX; px -= 2) {
+      const distFromStart = waveStartX - px;
+      const angle = ((distFromStart + wavePhase) / wavelength) * (Math.PI * 2);
+      const py = centerY + Math.sin(angle) * waveAmp;
+      if (px === waveStartX) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // Doppler wave status label above wave
+    ctx.fillStyle = waveColor;
+    ctx.font = 'bold 11.5px sans-serif';
+    let waveLabel = '🌊 기준 파장 (시선속도 0)';
+    if (isBlue) waveLabel = '🌊 청색편이 (Blueshift - 파장 압축)';
+    else if (isRed) waveLabel = '🌊 적색편이 (Redshift - 파장 팽창)';
+    ctx.fillText(waveLabel, x + w * 0.28, centerY - 14);
+
+    // 3. Observer (Earth / Telescope)
+    const earthR = 13;
+    const earthGlow = ctx.createRadialGradient(observerX, centerY, 4, observerX, centerY, earthR * 1.8);
+    earthGlow.addColorStop(0, '#00e5ff');
+    earthGlow.addColorStop(0.7, 'rgba(0, 100, 255, 0.35)');
+    earthGlow.addColorStop(1, 'rgba(0, 50, 255, 0)');
+    ctx.fillStyle = earthGlow;
+    ctx.beginPath();
+    ctx.arc(observerX, centerY, earthR * 1.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    const earthGrad = ctx.createRadialGradient(observerX - 3, centerY - 3, 2, observerX, centerY, earthR);
+    earthGrad.addColorStop(0, '#4fc3f7');
+    earthGrad.addColorStop(0.5, '#1976d2');
+    earthGrad.addColorStop(1, '#0d47a1');
+    ctx.fillStyle = earthGrad;
+    ctx.beginPath();
+    ctx.arc(observerX, centerY, earthR, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '16px sans-serif';
+    ctx.fillText('🔭', observerX - 8, centerY - 17);
+
+    ctx.fillStyle = '#00e5ff';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText('관측자 (지구 / Earth)', observerX - 48, centerY + earthR + 15);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.font = 'bold 10.5px sans-serif';
+    ctx.fillText('(시선 방향 도달점)', observerX - 36, centerY + earthR + 28);
+
+    // 4. Star-Planet Orbit System in Side View (3D Tilt with Inclination)
+    const rOrbitPx = Math.min(w * 0.16, 52);
+    const cosI = engine.sinIncFactor;
+    const sinI = engine.cosIncFactor;
+
+    const sideRadiusX = Math.max(6, rOrbitPx * Math.max(0.15, cosI));
+    const sideRadiusY = Math.max(6, rOrbitPx * Math.max(0.15, sinI));
+
+    ctx.strokeStyle = 'rgba(0, 229, 255, 0.35)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.ellipse(systemX, centerY, sideRadiusX, sideRadiusY, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Barycenter (+) mark in side view
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(systemX - 5, centerY);
+    ctx.lineTo(systemX + 5, centerY);
+    ctx.moveTo(systemX, centerY - 5);
+    ctx.lineTo(systemX, centerY + 5);
+    ctx.stroke();
+
+    // Real-time Planet position in side view
+    const maxA = engine.a || 1;
+    const relPlanetZ = state ? (state.planetPos.z / maxA) : 0;
+    const relPlanetY = state ? (state.planetPos.y / maxA) : 0;
+    const planetSideX = systemX - relPlanetZ * rOrbitPx;
+    const planetSideY = centerY - relPlanetY * rOrbitPx;
+
+    // Real-time Star position in side view
+    const relStarZ = state ? (state.starPos.z / maxA) : 0;
+    const relStarY = state ? (state.starPos.y / maxA) : 0;
+    const starSideX = systemX - relStarZ * rOrbitPx;
+    const starSideY = centerY - relStarY * rOrbitPx;
+
+    // Orbit system connecting line
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(starSideX, starSideY);
+    ctx.lineTo(planetSideX, planetSideY);
+    ctx.stroke();
+
+    // Star Body in side view
+    const starR = Math.max(7, Math.min(13, 8 * Math.sqrt(engine.rStarSun)));
+    const starGrad = ctx.createRadialGradient(starSideX, starSideY, 1, starSideX, starSideY, starR * 1.8);
+    starGrad.addColorStop(0, '#ffffff');
+    starGrad.addColorStop(0.4, '#ffdd66');
+    starGrad.addColorStop(1, 'rgba(255, 170, 0, 0)');
+    ctx.fillStyle = starGrad;
+    ctx.beginPath();
+    ctx.arc(starSideX, starSideY, starR * 1.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffbb33';
+    ctx.beginPath();
+    ctx.arc(starSideX, starSideY, starR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Planet Body in side view
+    const planetR = Math.max(4, Math.min(8, 4 * Math.cbrt(engine.rPlanetJup)));
+    ctx.fillStyle = '#00ffaa';
+    ctx.shadowColor = '#00ffaa';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(planetSideX, planetSideY, planetR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // System Labels
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('• 중심 항성', systemX - 25, centerY - sideRadiusY - 8);
+
+    ctx.fillStyle = '#00ffaa';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('• 외계 행성', systemX - 25, centerY + sideRadiusY + 16);
+
+    // 5. Inclination Status Badge in Top-Right
+    const badgeW = 210;
+    const badgeH = 26;
+    const badgeX = x + w - badgeW - 14;
+    const badgeY = y + 10;
+    ctx.fillStyle = 'rgba(12, 17, 34, 0.85)';
+    ctx.strokeStyle = engine.inclinationDeg === 0 ? 'rgba(0, 229, 255, 0.6)' : (engine.inclinationDeg === 90 ? 'rgba(255, 51, 102, 0.6)' : 'rgba(255, 255, 255, 0.25)');
+    ctx.lineWidth = 1.2;
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 6);
+      ctx.fill();
+      ctx.stroke();
+    } else {
+      ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+      ctx.strokeRect(badgeX, badgeY, badgeW, badgeH);
+    }
+
+    ctx.fillStyle = engine.inclinationDeg === 0 ? '#00e5ff' : (engine.inclinationDeg === 90 ? '#ff3366' : '#cbd5e1');
+    ctx.font = 'bold 11.5px sans-serif';
+    const incStatus = engine.inclinationDeg === 0 ? ' (최대 시선속도)' : (engine.inclinationDeg === 90 ? ' (시선속도 0)' : '');
+    ctx.fillText(`궤도 경사각 i = ${engine.inclinationDeg.toFixed(1)}°${incStatus}`, badgeX + 10, badgeY + 17);
+
+    ctx.restore();
+  }
+
+  /**
+   * Section 1: Side Profile View for Transit (시선 방향 관측 기하도: 별빛 통로와 식현상 원리)
+   */
+  renderTransitSideProfileView(ctx, x, y, w, h, engine, state) {
+    ctx.save();
+
+    // Section Header
+    ctx.fillStyle = 'rgba(0, 229, 255, 0.95)';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillText('📐 [1] 시선 방향 관측 기하도 (Side Profile View) : 시선 정렬과 식현상 발생 원리', x + 16, y + 22);
+
+    const centerY = y + h * 0.58;
+    const observerX = x + w * 0.13;
+    const systemX = x + w * 0.72;
+
+    const starR = Math.max(9, Math.min(16, 11 * Math.sqrt(engine.rStarSun)));
+    const earthR = 13;
+
+    // 1. Star-to-Earth Light Beam (지구로 향하는 별빛 원뿔 통로)
+    const beamGrad = ctx.createLinearGradient(systemX, centerY, observerX, centerY);
+    beamGrad.addColorStop(0, 'rgba(255, 215, 0, 0.22)');
+    beamGrad.addColorStop(0.6, 'rgba(255, 215, 0, 0.10)');
+    beamGrad.addColorStop(1, 'rgba(0, 229, 255, 0.08)');
+
+    ctx.fillStyle = beamGrad;
+    ctx.beginPath();
+    ctx.moveTo(systemX, centerY - starR * 1.1);
+    ctx.lineTo(observerX, centerY - earthR * 1.1);
+    ctx.lineTo(observerX, centerY + earthR * 1.1);
+    ctx.lineTo(systemX, centerY + starR * 1.1);
+    ctx.closePath();
+    ctx.fill();
+
+    // Light Beam Boundary Rays
+    ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(systemX, centerY - starR * 1.1);
+    ctx.lineTo(observerX, centerY - earthR * 1.1);
+    ctx.moveTo(systemX, centerY + starR * 1.1);
+    ctx.lineTo(observerX, centerY + earthR * 1.1);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Line of sight central axis
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(observerX, centerY);
+    ctx.lineTo(systemX, centerY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Light beam title
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.85)';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('지구 망원경으로 향하는 별빛 통로 (Light Beam)', x + w * 0.26, centerY - 14);
+
+    // 2. Observer (Earth / Telescope)
+    const earthGlow = ctx.createRadialGradient(observerX, centerY, 4, observerX, centerY, earthR * 1.8);
+    earthGlow.addColorStop(0, '#00e5ff');
+    earthGlow.addColorStop(0.7, 'rgba(0, 100, 255, 0.35)');
+    earthGlow.addColorStop(1, 'rgba(0, 50, 255, 0)');
+    ctx.fillStyle = earthGlow;
+    ctx.beginPath();
+    ctx.arc(observerX, centerY, earthR * 1.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    const earthGrad = ctx.createRadialGradient(observerX - 3, centerY - 3, 2, observerX, centerY, earthR);
+    earthGrad.addColorStop(0, '#4fc3f7');
+    earthGrad.addColorStop(0.5, '#1976d2');
+    earthGrad.addColorStop(1, '#0d47a1');
+    ctx.fillStyle = earthGrad;
+    ctx.beginPath();
+    ctx.arc(observerX, centerY, earthR, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '16px sans-serif';
+    ctx.fillText('🔭', observerX - 8, centerY - 17);
+
+    ctx.fillStyle = '#00e5ff';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText('관측자 (지구 / Earth)', observerX - 48, centerY + earthR + 15);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.font = 'bold 10.5px sans-serif';
+    ctx.fillText('(시선 방향 도달점)', observerX - 36, centerY + earthR + 28);
+
+    // 3. Planet Orbit in Side View (Tilted Orbit Plane)
+    const rOrbitPx = Math.min(w * 0.16, 52);
+    const cosI = engine.sinIncFactor;
+    const sinI = engine.cosIncFactor;
+
+    const sideRadiusX = Math.max(6, rOrbitPx * Math.max(0.15, cosI));
+    const sideRadiusY = Math.max(6, rOrbitPx * Math.max(0.15, sinI));
+
+    ctx.strokeStyle = state && state.isTransiting ? 'rgba(0, 255, 170, 0.5)' : 'rgba(0, 229, 255, 0.35)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.ellipse(systemX, centerY, sideRadiusX, sideRadiusY, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 4. Star Body in side view
+    const starGrad = ctx.createRadialGradient(systemX, centerY, 2, systemX, centerY, starR * 2);
+    starGrad.addColorStop(0, '#ffffff');
+    starGrad.addColorStop(0.3, '#ffcc44');
+    starGrad.addColorStop(0.8, '#ff6600');
+    starGrad.addColorStop(1, 'rgba(255, 102, 0, 0)');
+    ctx.fillStyle = starGrad;
+    ctx.beginPath();
+    ctx.arc(systemX, centerY, starR * 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffa726';
+    ctx.beginPath();
+    ctx.arc(systemX, centerY, starR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 5. Planet Body in side view
+    const maxA = engine.a || 1;
+    const relPlanetZ = state ? (state.planetPos.z / maxA) : 0;
+    const relPlanetY = state ? (state.planetPos.y / maxA) : 0;
+    const planetSideX = systemX - relPlanetZ * rOrbitPx;
+    const planetSideY = centerY - relPlanetY * rOrbitPx;
+
+    const planetR = Math.max(4, Math.min(9, 5 * Math.cbrt(engine.rPlanetJup)));
+
+    // If Transiting: Draw Shadow Cone from planet towards Earth!
+    if (state && state.isTransiting) {
+      const shadowGrad = ctx.createLinearGradient(planetSideX, planetSideY, observerX, centerY);
+      shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.7)');
+      shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+
+      ctx.fillStyle = shadowGrad;
+      ctx.beginPath();
+      ctx.moveTo(planetSideX, planetSideY - planetR);
+      ctx.lineTo(observerX, centerY - earthR * 0.7);
+      ctx.lineTo(observerX, centerY + earthR * 0.7);
+      ctx.lineTo(planetSideX, planetSideY + planetR);
+      ctx.closePath();
+      ctx.fill();
+
+      // Shadow boundary lines
+      ctx.strokeStyle = 'rgba(0, 255, 170, 0.6)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(planetSideX, planetSideY - planetR);
+      ctx.lineTo(observerX, centerY - earthR * 0.7);
+      ctx.moveTo(planetSideX, planetSideY + planetR);
+      ctx.lineTo(observerX, centerY + earthR * 0.7);
+      ctx.stroke();
+    }
+
+    // Planet Circle
+    if (state && state.isTransiting) {
+      ctx.fillStyle = '#0a0d1a';
+      ctx.strokeStyle = '#00ffaa';
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = '#00ffaa';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(planetSideX, planetSideY, planetR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    } else {
+      ctx.fillStyle = '#00ffaa';
+      ctx.beginPath();
+      ctx.arc(planetSideX, planetSideY, planetR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Labels
+    ctx.fillStyle = '#ffaa66';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('• 중심 항성', systemX - 25, centerY - sideRadiusY - 8);
+
+    ctx.fillStyle = state && state.isTransiting ? '#00ffaa' : '#00e5ff';
+    ctx.font = 'bold 11px sans-serif';
+    const planetText = state && state.isTransiting ? '• 외계 행성 (식 진행 중 - 별빛 차폐)' : '• 외계 행성';
+    ctx.fillText(planetText, systemX - 35, centerY + sideRadiusY + 16);
+
+    // 6. Real-time Status Pill in Top-Right
+    const isTransiting = state && state.isTransiting;
+    const hasTransit = engine.cosIncFactor * (engine.a / engine.rStar) < (1 + engine.rPlanet / engine.rStar);
+
+    let statusPillText = '● 궤도 정렬: 공전 주기마다 식현상 발생';
+    let statusPillCol = '#00e5ff';
+    let statusBorderCol = 'rgba(0, 229, 255, 0.4)';
+
+    if (isTransiting) {
+      statusPillText = '★ [식 진행 중!] 행성이 별빛을 차폐함';
+      statusPillCol = '#00ffaa';
+      statusBorderCol = 'rgba(0, 255, 170, 0.7)';
+    } else if (!hasTransit) {
+      statusPillText = '⚠ 궤도 경사각이 커서 별빛 통로를 비껴감';
+      statusPillCol = '#ff3366';
+      statusBorderCol = 'rgba(255, 51, 102, 0.6)';
+    }
+
+    ctx.font = 'bold 11.5px sans-serif';
+    const badgeW = ctx.measureText(statusPillText).width + 20;
+    const badgeH = 26;
+    const badgeX = x + w - badgeW - 14;
+    const badgeY = y + 10;
+
+    ctx.fillStyle = 'rgba(12, 17, 34, 0.88)';
+    ctx.strokeStyle = statusBorderCol;
+    ctx.lineWidth = 1.2;
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 6);
+      ctx.fill();
+      ctx.stroke();
+    } else {
+      ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+      ctx.strokeRect(badgeX, badgeY, badgeW, badgeH);
+    }
+
+    ctx.fillStyle = statusPillCol;
+    ctx.fillText(statusPillText, badgeX + 10, badgeY + 17);
+
+    ctx.restore();
+  }
+
+  renderBarycentricOrbit(ctx, x, y, width, height, engine, state) {
+    ctx.save();
+
+    // Section Header
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillText('🔭 [2] 행성계 공전 궤도 평면도 (Top-down Orbit View) : 공통 질량 중심 운동', x + 16, y + 24);
+
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
     const minDim = Math.min(width, height);
 
     const maxDistanceMeters = engine.rPlanetBary * (1 + engine.ecc);
     const scale = (minDim * 0.38) / maxDistanceMeters;
 
-    this.drawLineOfSightIndicator(ctx, width, height, engine.inclinationDeg);
+    this.drawLineOfSightIndicator(ctx, x, y, width, height, engine.inclinationDeg);
 
     // Draw Barycenter (+)
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
@@ -246,14 +698,22 @@ class OrbitViewRenderer {
     ctx.fill();
 
     ctx.restore();
+    ctx.restore();
   }
 
   /**
    * Observer Transit View (Screen 2)
    */
-  renderTransitObserverView(ctx, width, height, engine, state) {
-    const centerX = width / 2;
-    const centerY = height / 2;
+  renderTransitObserverView(ctx, x, y, width, height, engine, state) {
+    ctx.save();
+
+    // Section Header
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillText('🔭 [2] 관측자 망원경 천구 뷰 (Observer Transit Sky View) : 항성 원반 직접 관측', x + 16, y + 24);
+
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
     const minDim = Math.min(width, height);
 
     // 1. Base scale based on star physical radius
@@ -362,28 +822,7 @@ class OrbitViewRenderer {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // 5. Impact Parameter Guide Line
-    const impactDistPx = (engine.a * engine.cosIncFactor) * scale;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([3, 3]);
-    ctx.beginPath();
-    const impactHalfW = Math.max(starRadiusPx * 1.8, Math.min(width * 0.45, 65));
-    ctx.moveTo(centerX - impactHalfW, centerY + impactDistPx);
-    ctx.lineTo(centerX + impactHalfW, centerY + impactDistPx);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.font = 'bold 12.5px sans-serif';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-    ctx.shadowBlur = 4;
-    const impactVal = ((engine.a / engine.rStar) * engine.cosIncFactor).toFixed(2);
-    ctx.fillText(`임팩트 파라미터 b = ${impactVal}`, 
-                 centerX - impactHalfW + 5, centerY + impactDistPx - 7);
-    ctx.shadowBlur = 0;
-
-    // 6. Current Planet Position & Geometric Occultation Logic
+    // 5. Current Planet Position & Geometric Occultation Logic
     const relX = (state.planetPos.x - state.starPos.x) * scale;
     const relY = (state.planetPos.y - state.starPos.y) * scale;
     const planetX = centerX + relX;
@@ -455,7 +894,7 @@ class OrbitViewRenderer {
       }
     }
 
-    // 7. Zoom Status Badge in Top-Right
+    // 6. Zoom Status Badge in Top-Right
     ctx.save();
     const isAutoZoomed = autoZoom < 0.98;
     const isUserZoomed = Math.abs(userZoom - 1.0) > 0.03;
@@ -470,8 +909,8 @@ class OrbitViewRenderer {
     const textMetrics = ctx.measureText(zoomText);
     const badgeW = textMetrics.width + 20;
     const badgeH = 26;
-    const badgeX = width - badgeW - 14;
-    const badgeY = 12;
+    const badgeX = x + width - badgeW - 14;
+    const badgeY = y + 10;
 
     ctx.fillStyle = 'rgba(12, 17, 34, 0.82)';
     ctx.strokeStyle = isAutoZoomed || isUserZoomed ? 'rgba(0, 229, 255, 0.6)' : 'rgba(255, 255, 255, 0.25)';
@@ -488,12 +927,14 @@ class OrbitViewRenderer {
     ctx.fillStyle = isAutoZoomed || isUserZoomed ? '#00e5ff' : '#cbd5e1';
     ctx.fillText(zoomText, badgeX + 10, badgeY + 17);
     ctx.restore();
+
+    ctx.restore();
   }
 
-  drawLineOfSightIndicator(ctx, width, height, incDeg) {
+  drawLineOfSightIndicator(ctx, x, y, width, height, incDeg) {
     ctx.save();
-    const arrowX = 35;
-    const arrowY = height - 45;
+    const arrowX = x + 30;
+    const arrowY = y + height - 36;
 
     ctx.strokeStyle = '#00e5ff';
     ctx.fillStyle = '#00e5ff';
@@ -501,21 +942,21 @@ class OrbitViewRenderer {
 
     ctx.beginPath();
     ctx.moveTo(arrowX, arrowY);
-    ctx.lineTo(arrowX, arrowY - 30);
+    ctx.lineTo(arrowX, arrowY - 26);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(arrowX, arrowY - 30);
-    ctx.lineTo(arrowX - 5, arrowY - 22);
-    ctx.lineTo(arrowX + 5, arrowY - 22);
+    ctx.moveTo(arrowX, arrowY - 26);
+    ctx.lineTo(arrowX - 5, arrowY - 18);
+    ctx.lineTo(arrowX + 5, arrowY - 18);
     ctx.fill();
 
-    ctx.font = 'bold 13.5px sans-serif';
-    ctx.fillText('관측자 시선 방향 (Earth)', arrowX + 14, arrowY - 14);
-    ctx.font = 'bold 12px sans-serif';
+    ctx.font = 'bold 12.5px sans-serif';
+    ctx.fillText('관측자 시선 방향 (Earth)', arrowX + 12, arrowY - 12);
+    ctx.font = 'bold 11px sans-serif';
     ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-    const statusStr = incDeg === 0 ? ' (평행: 최대 시선속도 & 식현상)' : (incDeg === 90 ? ' (수직: 시선속도 0)' : '');
-    ctx.fillText(`궤도 경사각 = ${incDeg.toFixed(1)}°${statusStr}`, arrowX + 14, arrowY + 4);
+    const statusStr = incDeg === 0 ? ' (평행: 최대 시선속도)' : (incDeg === 90 ? ' (수직: 시선속도 0)' : '');
+    ctx.fillText(`궤도 경사각 = ${incDeg.toFixed(1)}°${statusStr}`, arrowX + 12, arrowY + 3);
     ctx.restore();
   }
 

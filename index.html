@@ -81,7 +81,7 @@
           </div>
 
           <!-- Canvas 1: 2D Orbit View -->
-          <div class="canvas-wrapper">
+          <div class="canvas-wrapper" style="height: 500px;">
             <canvas id="orbitCanvas"></canvas>
           </div>
 
@@ -302,7 +302,7 @@
               <li>질량(\(M_s, m_p\))과 궤도 반지름(\(a\))을 조절하면 케플러 제3법칙에 의해 <strong>공전 주기(\(P\))</strong>가 실시간으로 변화합니다.</li>
             </ul>
             <div class="formula-box">
-              ΔF = (R_p / R_s)² | P² ∝ a³ / (M_s + m_p) | b = (a / R_s) × sin(θ)
+              ΔF = (R_p / R_s)² | P² ∝ a³ / (M_s + m_p)
             </div>
             <div class="stats-flex">
               <div class="stat-item">
@@ -312,10 +312,6 @@
               <div class="stat-item">
                 <span class="stat-title">최대 식 깊이 (ΔF)</span>
                 <span id="statTransitDepth" class="stat-value">1.008 %</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-title">임팩트 파라미터 (b)</span>
-                <span id="statImpactParam" class="stat-value">0.00</span>
               </div>
             </div>
           </div>

@@ -86,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const statK = document.getElementById('statK');
   const rvAmplitudeText = document.getElementById('rvAmplitudeText');
   const statTransitDepth = document.getElementById('statTransitDepth');
-  const statImpactParam = document.getElementById('statImpactParam');
   const lightCurveDepthText = document.getElementById('lightCurveDepthText');
   const transitStatusText = document.getElementById('transitStatusText');
 
@@ -401,7 +400,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (rvAmplitudeText) rvAmplitudeText.textContent = `진폭 K: ${physics.K.toFixed(2)} m/s`;
 
     if (statTransitDepth) statTransitDepth.textContent = `${fullData.maxDepthPercent} %`;
-    if (statImpactParam) statImpactParam.textContent = `${fullData.impactParameter}`;
     if (lightCurveDepthText) lightCurveDepthText.textContent = `식 깊이 ΔF: ${fullData.maxDepthPercent} %`;
 
     if (activeTab === 'rv') {
