@@ -18,6 +18,23 @@ class OrbitViewRenderer {
     this.maxTrailLength = 40;
     
     this.viewMode = 'orbit';
+    this.transitUserZoom = 1.0;
+
+    if (this.canvas) {
+      this.canvas.addEventListener('wheel', (e) => {
+        if (this.viewMode === 'transit') {
+          e.preventDefault();
+          const zoomDelta = e.deltaY < 0 ? 1.08 : 0.92;
+          this.transitUserZoom = Math.max(0.15, Math.min(5.0, (this.transitUserZoom || 1.0) * zoomDelta));
+        }
+      }, { passive: false });
+
+      this.canvas.addEventListener('dblclick', () => {
+        if (this.viewMode === 'transit') {
+          this.transitUserZoom = 1.0;
+        }
+      });
+    }
 
     this.resizeCanvas();
     window.addEventListener('resize', () => this.resizeCanvas());
@@ -236,12 +253,40 @@ class OrbitViewRenderer {
     const centerY = height / 2;
     const minDim = Math.min(width, height);
 
+    // 1. Base scale based on star physical radius
     const baseStarRadiusPx = minDim * 0.20;
-    const starRadiusPx = Math.max(20, Math.min(minDim * 0.42, baseStarRadiusPx * Math.pow(engine.rStarSun, 0.65)));
-    const scale = starRadiusPx / engine.rStar;
+    const baseStarRadius = Math.max(20, Math.min(minDim * 0.42, baseStarRadiusPx * Math.pow(engine.rStarSun, 0.65)));
+    const baseScale = baseStarRadius / engine.rStar;
+
+    // 2. Maximum projected extent of planet orbit in meters
+    const maxOrbitDistMeters = engine.a * (1 + engine.ecc);
+    const rawOrbitRadiusX_px = maxOrbitDistMeters * baseScale;
+    const rawOrbitRadiusY_px = maxOrbitDistMeters * Math.max(0.15, engine.cosIncFactor) * baseScale;
+
+    // 3. Margin boundaries: keep entire orbit inside canvas with padding
+    const maxAllowedX = Math.max(60, (width / 2) - 45);
+    const maxAllowedY = Math.max(50, (height / 2) - 35);
+
+    // 4. Calculate auto-zoom:
+    // When the orbit fits inside maxAllowed, autoZoom = 1.0 (star remains full size)
+    // When the orbital radius gets larger and exceeds maxAllowed, autoZoom smoothly shrinks to keep the entire orbit in view!
+    let autoZoom = 1.0;
+    if (rawOrbitRadiusX_px > maxAllowedX || rawOrbitRadiusY_px > maxAllowedY) {
+      const zoomX = maxAllowedX / rawOrbitRadiusX_px;
+      const zoomY = maxAllowedY / rawOrbitRadiusY_px;
+      autoZoom = Math.min(1.0, zoomX, zoomY);
+    }
+
+    // Apply user zoom (mouse wheel)
+    const userZoom = this.transitUserZoom || 1.0;
+    const totalZoom = Math.max(0.05, Math.min(5.0, autoZoom * userZoom));
+
+    // Effective scale & star radius
+    const scale = baseScale * totalZoom;
+    const starRadiusPx = Math.max(12, baseStarRadius * totalZoom);
 
     // 1. Star Ambient Background Glow
-    const starGlow = ctx.createRadialGradient(centerX, centerY, starRadiusPx * 0.2, centerX, centerY, starRadiusPx * 1.3);
+    const starGlow = ctx.createRadialGradient(centerX, centerY, starRadiusPx * 0.2, centerX, centerY, starRadiusPx * 1.35);
     starGlow.addColorStop(0, '#ffffff');
     starGlow.addColorStop(0.5, '#ffbb33');
     starGlow.addColorStop(0.85, '#ff6600');
@@ -249,7 +294,7 @@ class OrbitViewRenderer {
 
     ctx.fillStyle = starGlow;
     ctx.beginPath();
-    ctx.arc(centerX, centerY, starRadiusPx * 1.3, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, starRadiusPx * 1.35, 0, Math.PI * 2);
     ctx.fill();
 
     // 2. Draw Planet Orbit Line - Back Part (Behind Star Z, relZ < 0)
@@ -320,8 +365,9 @@ class OrbitViewRenderer {
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    ctx.moveTo(centerX - starRadiusPx * 1.8, centerY + impactDistPx);
-    ctx.lineTo(centerX + starRadiusPx * 1.8, centerY + impactDistPx);
+    const impactHalfW = Math.max(starRadiusPx * 1.8, Math.min(width * 0.45, 65));
+    ctx.moveTo(centerX - impactHalfW, centerY + impactDistPx);
+    ctx.lineTo(centerX + impactHalfW, centerY + impactDistPx);
     ctx.stroke();
     ctx.setLineDash([]);
 
@@ -329,7 +375,7 @@ class OrbitViewRenderer {
     ctx.font = '11px sans-serif';
     const impactVal = ((engine.a / engine.rStar) * engine.cosIncFactor).toFixed(2);
     ctx.fillText(`임팩트 파라미터 b = ${impactVal}`, 
-                 centerX - starRadiusPx * 1.7, centerY + impactDistPx - 6);
+                 centerX - impactHalfW + 5, centerY + impactDistPx - 6);
 
     // 6. Current Planet Position & Geometric Occultation Logic
     const relX = (state.planetPos.x - state.starPos.x) * scale;
@@ -339,7 +385,7 @@ class OrbitViewRenderer {
     const projDistPx = Math.sqrt(relX * relX + relY * relY);
 
     const isPlanetInFront = state.planetPos.z > state.starPos.z;
-    const planetRadiusPx = Math.max(3, engine.rPlanet * scale);
+    const planetRadiusPx = Math.max(3.5, Math.min(starRadiusPx * 0.5, engine.rPlanet * scale));
 
     const isOccultedBehindStarDisk = (!isPlanetInFront) && (projDistPx < starRadiusPx + planetRadiusPx);
 
@@ -396,6 +442,40 @@ class OrbitViewRenderer {
         ctx.fillText('(보임 - 가려지지 않음)', planetX + 12, planetY + 4);
       }
     }
+
+    // 7. Zoom Status Badge in Top-Right
+    ctx.save();
+    const isAutoZoomed = autoZoom < 0.98;
+    const isUserZoomed = Math.abs(userZoom - 1.0) > 0.03;
+    let zoomText = `🔍 줌: ${(totalZoom * 100).toFixed(0)}%`;
+    if (isAutoZoomed && !isUserZoomed) {
+      zoomText = `🔍 궤도 전체 맞춤 (${(totalZoom * 100).toFixed(0)}%)`;
+    } else if (isUserZoomed) {
+      zoomText = `🔍 사용자 줌: ${(totalZoom * 100).toFixed(0)}% (더블클릭 초기화)`;
+    }
+
+    ctx.font = 'bold 11px sans-serif';
+    const textMetrics = ctx.measureText(zoomText);
+    const badgeW = textMetrics.width + 18;
+    const badgeH = 22;
+    const badgeX = width - badgeW - 12;
+    const badgeY = 12;
+
+    ctx.fillStyle = 'rgba(12, 17, 34, 0.75)';
+    ctx.strokeStyle = isAutoZoomed || isUserZoomed ? 'rgba(0, 229, 255, 0.5)' : 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 11);
+    } else {
+      ctx.rect(badgeX, badgeY, badgeW, badgeH);
+    }
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = isAutoZoomed || isUserZoomed ? '#00e5ff' : '#cbd5e1';
+    ctx.fillText(zoomText, badgeX + 9, badgeY + 15);
+    ctx.restore();
   }
 
   drawLineOfSightIndicator(ctx, width, height, incDeg) {

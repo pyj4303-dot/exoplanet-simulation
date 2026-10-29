@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputInclinationTransit) inputInclinationTransit.value = p.inclinationDeg;
     if (inputSemiMajorTransit) {
       const minT = parseFloat(inputSemiMajorTransit.min || 0.005);
-      const maxT = parseFloat(inputSemiMajorTransit.max || 0.050);
+      const maxT = parseFloat(inputSemiMajorTransit.max || 0.100);
       inputSemiMajorTransit.value = Math.max(minT, Math.min(maxT, p.semiMajorAxisAU));
     }
 
