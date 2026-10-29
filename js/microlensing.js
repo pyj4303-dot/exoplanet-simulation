@@ -192,9 +192,9 @@ class MicrolensingViewRenderer {
     ctx.save();
 
     // Section Header
-    ctx.fillStyle = 'rgba(0, 229, 255, 0.9)';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.fillText('📐 [1] 시선 방향 관측 기하도 (Side Profile View) : 빛의 굴절과 집광', x + 16, y + 22);
+    ctx.fillStyle = 'rgba(0, 229, 255, 0.95)';
+    ctx.font = 'bold 13.5px sans-serif';
+    ctx.fillText('📐 [1] 시선 방향 관측 기하도 (Side Profile View) : 빛의 굴절과 집광', x + 16, y + 24);
 
     const centerY = y + h * 0.58;
 
@@ -279,11 +279,11 @@ class MicrolensingViewRenderer {
     ctx.fillText('🔭', observerX - 8, centerY - 18);
 
     ctx.fillStyle = '#00e5ff';
+    ctx.font = 'bold 12.5px sans-serif';
+    ctx.fillText('관측자 (지구 / Earth)', observerX - 54, centerY + earthR + 17);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('관측자 (지구 / Earth)', observerX - 48, centerY + earthR + 15);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('(시선 방향 도달점)', observerX - 35, centerY + earthR + 28);
+    ctx.fillText('(시선 방향 도달점)', observerX - 42, centerY + earthR + 32);
 
     // 4. Render Lens System (중간: 렌즈 별 + 외계 행성)
     const lensStarR = 11;
@@ -324,14 +324,14 @@ class MicrolensingViewRenderer {
     }
 
     ctx.fillStyle = '#ff8855';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('전경 렌즈계', lensX - 26, centerY - lensStarR - 18);
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillText('전경 렌즈계', lensX - 30, centerY - lensStarR - 20);
     ctx.fillStyle = '#ffaa77';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('• 렌즈 별', lensX - 22, centerY + lensStarR + 15);
+    ctx.font = 'bold 11.5px sans-serif';
+    ctx.fillText('• 렌즈 별', lensX - 25, centerY + lensStarR + 17);
     ctx.fillStyle = '#00ffaa';
-    ctx.font = 'bold 10px sans-serif';
-    ctx.fillText(`• 외계 행성 (${physics.mPlanetJup.toFixed(1)} M_Jup)`, lensX - 22, centerY + lensStarR + 27);
+    ctx.font = 'bold 11.5px sans-serif';
+    ctx.fillText(`• 외계 행성 (${physics.mPlanetJup.toFixed(1)} M_Jup)`, lensX - 25, centerY + lensStarR + 32);
 
     // 5. Render Source Star (우측: 배경별)
     const sourceR = 12;
@@ -351,11 +351,11 @@ class MicrolensingViewRenderer {
     ctx.fill();
 
     ctx.fillStyle = '#ffd54f';
+    ctx.font = 'bold 12.5px sans-serif';
+    ctx.fillText('배경별 (Source Star)', sourceX - 52, centerY - sourceR - 16);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('배경별 (Source Star)', sourceX - 45, centerY - sourceR - 15);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('(먼 곳에서 빛 방출)', sourceX - 35, centerY + sourceR + 15);
+    ctx.fillText('(먼 곳에서 빛 방출)', sourceX - 42, centerY + sourceR + 17);
 
     ctx.restore();
   }
@@ -368,8 +368,8 @@ class MicrolensingViewRenderer {
 
     // Section Header
     ctx.fillStyle = '#ffd700';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.fillText('🔭 [2] 관측자 망원경 천구 뷰 (Observer Telescope Sky View)', x + 16, y + 22);
+    ctx.font = 'bold 13.5px sans-serif';
+    ctx.fillText('🔭 [2] 관측자 망원경 천구 뷰 (Observer Telescope Sky View)', x + 16, y + 24);
 
     const centerX = x + w * 0.48;
     const centerY = y + h * 0.52;
@@ -423,8 +423,11 @@ class MicrolensingViewRenderer {
     ctx.fill();
 
     ctx.fillStyle = '#ffdd88';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('배경별 (Source)', centerX + 16, centerY - 12);
+    ctx.font = 'bold 12.5px sans-serif';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 4;
+    ctx.fillText('배경별 (Source)', centerX + 18, centerY - 14);
+    ctx.shadowBlur = 0;
 
     // 4. Lens Star & Einstein Ring
     const lensStarX = centerX + state.starPos.x * scale;
@@ -488,8 +491,11 @@ class MicrolensingViewRenderer {
     ctx.fill();
 
     ctx.fillStyle = '#ffaa77';
-    ctx.font = 'bold 10px sans-serif';
-    ctx.fillText('렌즈 별', lensStarX + 12, lensStarY + 3);
+    ctx.font = 'bold 12px sans-serif';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 4;
+    ctx.fillText('렌즈 별', lensStarX + 14, lensStarY + 4);
+    ctx.shadowBlur = 0;
 
     // 행성 본체 (질량 비례 크기)
     const planetR = Math.max(4, 3.5 * Math.cbrt(physics.mPlanetJup));
@@ -511,23 +517,28 @@ class MicrolensingViewRenderer {
     ctx.fill();
 
     ctx.fillStyle = '#00ffaa';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText(`외계 행성 (${physics.mPlanetJup.toFixed(1)} M_Jup)`, planetPxX + 10, planetPxY + 4);
+    ctx.font = 'bold 12.5px sans-serif';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(`외계 행성 (${physics.mPlanetJup.toFixed(1)} M_Jup)`, planetPxX + 12, planetPxY + 4);
+    ctx.shadowBlur = 0;
 
     // Status Badge Box
-    ctx.fillStyle = 'rgba(12, 17, 34, 0.88)';
-    ctx.strokeStyle = state.isNearPlanet ? '#00ffaa' : 'rgba(255, 255, 255, 0.15)';
+    const badgeBoxW = Math.min(380, w - 30);
+    const badgeBoxH = 46;
+    ctx.fillStyle = 'rgba(12, 17, 34, 0.90)';
+    ctx.strokeStyle = state.isNearPlanet ? '#00ffaa' : 'rgba(255, 255, 255, 0.2)';
     ctx.lineWidth = 1.5;
-    ctx.fillRect(x + 15, y + h - 55, 310, 42);
-    ctx.strokeRect(x + 15, y + h - 55, 310, 42);
+    ctx.fillRect(x + 15, y + h - 58, badgeBoxW, badgeBoxH);
+    ctx.strokeRect(x + 15, y + h - 58, badgeBoxW, badgeBoxH);
 
     ctx.fillStyle = state.isNearPlanet ? '#00ffaa' : '#ffffff';
-    ctx.font = 'bold 11.5px sans-serif';
+    ctx.font = 'bold 13px sans-serif';
     const statusTitle = state.isNearPlanet ? '★ [외계 행성 광도 피크 발생 중!] 밝기 급증' : '● 렌즈계가 배경별 앞을 통과하는 중';
-    ctx.fillText(statusTitle, x + 24, y + h - 38);
+    ctx.fillText(statusTitle, x + 24, y + h - 39);
 
-    ctx.fillStyle = '#a0aec0';
-    ctx.font = '10.5px sans-serif';
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = 'bold 11.5px sans-serif';
     ctx.fillText(`현재 상대 광도 증폭률: ${state.A_total.toFixed(3)} 배 (행성 섭동: +${state.deltaA.toFixed(3)}배)`, x + 24, y + h - 21);
 
     ctx.restore();
@@ -562,10 +573,10 @@ class MicrolensingChartRenderer {
     ctx.save();
     ctx.clearRect(0, 0, w, h);
 
-    const padLeft = 65;
+    const padLeft = 70;
     const padRight = 30;
-    const padTop = 35;
-    const padBottom = 42;
+    const padTop = 38;
+    const padBottom = 48;
 
     const plotW = w - padLeft - padRight;
     const plotH = h - padTop - padBottom;
@@ -603,9 +614,11 @@ class MicrolensingChartRenderer {
       ctx.lineTo(padLeft + plotW, yPos);
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
-      ctx.font = '10px sans-serif';
-      ctx.fillText(`${yVal.toFixed(1)}배`, padLeft - 45, yPos + 3);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${yVal.toFixed(1)}배`, padLeft - 10, yPos + 4);
+      ctx.textAlign = 'left';
     }
 
     // Baseline A = 1.0 Highlight Line
@@ -630,10 +643,12 @@ class MicrolensingChartRenderer {
       ctx.lineTo(xPos, padTop + plotH);
       ctx.stroke();
 
-      ctx.fillStyle = tVal === 0 ? '#ffd700' : 'rgba(255, 255, 255, 0.7)';
-      ctx.font = tVal === 0 ? 'bold 10px sans-serif' : '10px sans-serif';
+      ctx.fillStyle = tVal === 0 ? '#ffd700' : 'rgba(255, 255, 255, 0.85)';
+      ctx.font = tVal === 0 ? 'bold 12px sans-serif' : '11.5px sans-serif';
+      ctx.textAlign = 'center';
       const labelText = tVal === 0 ? '최접근 (0일)' : `${tVal > 0 ? '+' : ''}${tVal}일`;
-      ctx.fillText(labelText, xPos - 18, padTop + plotH + 16);
+      ctx.fillText(labelText, xPos, padTop + plotH + 20);
+      ctx.textAlign = 'left';
     });
 
     // 1. Draw Lens Star Alone Curve (Paczynski Curve - Dashed Orange)
@@ -714,10 +729,29 @@ class MicrolensingChartRenderer {
       ctx.lineTo(peakX, peakY - 26);
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(0, 255, 170, 0.95)';
-      ctx.font = 'bold 11.5px sans-serif';
+      ctx.save();
       const peakLabel = `★ 외계 행성 피크! (+${maxDeltaA.toFixed(2)}배)`;
-      ctx.fillText(peakLabel, Math.max(padLeft + 10, Math.min(peakX - 65, w - 175)), peakY - 30);
+      ctx.font = 'bold 13px sans-serif';
+      const peakMetrics = ctx.measureText(peakLabel);
+      const calloutX = Math.max(padLeft + 10, Math.min(peakX - peakMetrics.width / 2, w - padRight - peakMetrics.width - 10));
+      const calloutY = peakY - 32;
+
+      ctx.fillStyle = 'rgba(12, 17, 34, 0.88)';
+      ctx.strokeStyle = '#00ffaa';
+      ctx.lineWidth = 1.2;
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(calloutX - 8, calloutY - 16, peakMetrics.width + 16, 23, 6);
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        ctx.fillRect(calloutX - 8, calloutY - 16, peakMetrics.width + 16, 23);
+        ctx.strokeRect(calloutX - 8, calloutY - 16, peakMetrics.width + 16, 23);
+      }
+
+      ctx.fillStyle = '#00ffaa';
+      ctx.fillText(peakLabel, calloutX, calloutY);
+      ctx.restore();
     }
 
     // 4. Current Time Cursor (White Dot & Vertical Line)
@@ -746,33 +780,54 @@ class MicrolensingChartRenderer {
     ctx.stroke();
 
     // Value Tooltip on Chart
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px sans-serif';
+    ctx.save();
+    ctx.font = 'bold 13px sans-serif';
     const dayStr = currentPt.tDays > 0 ? `+${currentPt.tDays.toFixed(1)}` : currentPt.tDays.toFixed(1);
     const valText = `t: ${dayStr}일 | 밝기: ${currentPt.A_total.toFixed(3)}배`;
-    ctx.fillText(valText, Math.min(currentX + 10, w - 180), Math.max(padTop + 30, currentY - 10));
+    const tipMetrics = ctx.measureText(valText);
+    const tipX = Math.min(currentX + 12, w - padRight - tipMetrics.width - 16);
+    const tipY = Math.max(padTop + 24, currentY - 14);
+
+    ctx.fillStyle = 'rgba(10, 15, 30, 0.90)';
+    ctx.strokeStyle = '#00ffaa';
+    ctx.lineWidth = 1;
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(tipX - 6, tipY - 15, tipMetrics.width + 12, 21, 6);
+      ctx.fill();
+      ctx.stroke();
+    } else {
+      ctx.fillRect(tipX - 6, tipY - 15, tipMetrics.width + 12, 21);
+      ctx.strokeRect(tipX - 6, tipY - 15, tipMetrics.width + 12, 21);
+    }
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(valText, tipX, tipY);
+    ctx.restore();
 
     // Legend
-    ctx.fillStyle = 'rgba(255, 170, 0, 0.9)';
-    ctx.font = '11px sans-serif';
-    ctx.fillText('--- 렌즈별 단독 곡선 (행성 없을 때)', padLeft + 15, padTop + 20);
+    ctx.fillStyle = 'rgba(255, 170, 0, 0.95)';
+    ctx.font = 'bold 12.5px sans-serif';
+    ctx.fillText('--- 렌즈별 단독 곡선 (행성 없을 때)', padLeft + 15, padTop + 22);
 
     ctx.fillStyle = '#00ffaa';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('━ 외계 행성 포함 광도 곡선', padLeft + 225, padTop + 20);
+    ctx.font = 'bold 12.5px sans-serif';
+    ctx.fillText('━ 외계 행성 포함 광도 곡선', padLeft + 250, padTop + 22);
 
     // Axis Labels
     ctx.save();
-    ctx.translate(padLeft - 50, padTop + plotH / 2);
+    ctx.translate(padLeft - 52, padTop + plotH / 2);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillStyle = '#a0aec0';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('상대 광도 증폭률 A(t)', -60, 0);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('상대 광도 증폭률 A(t)', 0, 0);
     ctx.restore();
 
     ctx.fillStyle = '#00ffaa';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('시간 (일 / Days)', padLeft + plotW / 2 - 35, padTop + plotH + 34);
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('시간 (일 / Days)', padLeft + plotW / 2, padTop + plotH + 38);
 
     ctx.restore();
   }

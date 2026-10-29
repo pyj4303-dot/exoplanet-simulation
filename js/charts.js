@@ -60,10 +60,10 @@ class ChartRenderer {
     ctx.save();
     ctx.clearRect(0, 0, w, h);
 
-    const padLeft = 65;
+    const padLeft = 70;
     const padRight = 25;
     const padTop = 35;
-    const padBottom = 40;
+    const padBottom = 48;
 
     const plotW = w - padLeft - padRight;
     const plotH = h - padTop - padBottom;
@@ -80,8 +80,8 @@ class ChartRenderer {
     // Draw Period P vertical dashed line at t = periodDays
     const pX = padLeft + (periodDays / timeSpanDays) * plotW;
     if (pX >= padLeft && pX <= padLeft + plotW) {
-      ctx.strokeStyle = 'rgba(255, 215, 0, 0.8)';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.85)';
+      ctx.lineWidth = 1.8;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
       ctx.moveTo(pX, padTop);
@@ -89,10 +89,13 @@ class ChartRenderer {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.fillStyle = '#ffd700';
-      ctx.font = 'bold 11px sans-serif';
+      ctx.font = 'bold 13px sans-serif';
       const pText = periodDays >= 100 ? `주기 P = ${periodDays.toFixed(0)}일` : `주기 P = ${periodDays.toFixed(1)}일`;
-      ctx.fillText(pText, Math.min(pX + 5, w - 120), padTop + 16);
+      const pTextW = ctx.measureText(pText).width;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.fillRect(Math.min(pX + 4, w - pTextW - 14), padTop + 4, pTextW + 8, 20);
+      ctx.fillStyle = '#ffd700';
+      ctx.fillText(pText, Math.min(pX + 8, w - pTextW - 10), padTop + 18);
     }
 
     // Draw Compare Dataset (if enabled)
@@ -159,12 +162,27 @@ class ChartRenderer {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Value Tooltip on Chart
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px sans-serif';
+    // Value Tooltip on Chart (Prominent Badge)
+    ctx.font = 'bold 13.5px sans-serif';
     const dayStr = currentPt.timeDays >= 100 ? currentPt.timeDays.toFixed(0) : currentPt.timeDays.toFixed(1);
     const vrValText = `t: ${dayStr}일 | v_r: ${currentPt.v_r.toFixed(2)} m/s`;
-    ctx.fillText(vrValText, Math.min(currentX + 10, w - 170), Math.max(padTop + 32, currentY - 10));
+    const tipMetrics = ctx.measureText(vrValText);
+    const tipW = tipMetrics.width + 18;
+    const tipH = 26;
+    const tipX = Math.min(Math.max(currentX + 10, padLeft + 8), w - tipW - 10);
+    const tipY = Math.max(padTop + 24, Math.min(padTop + plotH - tipH, currentY - 14));
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    ctx.strokeStyle = '#00e5ff';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(tipX, tipY - 18, tipW, tipH, 6);
+    else ctx.rect(tipX, tipY - 18, tipW, tipH);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(vrValText, tipX + 9, tipY);
 
     // Peak Amplitude K label line
     const kNorm = Math.max(-1.0, Math.min(1.0, K / maxYScale));
@@ -176,9 +194,13 @@ class ChartRenderer {
     ctx.lineTo(padLeft + plotW, kY);
     ctx.stroke();
 
+    ctx.font = 'bold 13.5px sans-serif';
+    const kText = `진폭 K = ${K.toFixed(2)} m/s`;
+    const kW = ctx.measureText(kText).width;
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.fillRect(padLeft + 8, Math.max(padTop + 4, kY - 21), kW + 10, 20);
     ctx.fillStyle = '#ff3366';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText(`진폭 K = ${K.toFixed(2)} m/s`, padLeft + 10, Math.max(padTop + 15, kY - 4));
+    ctx.fillText(kText, padLeft + 12, Math.max(padTop + 18, kY - 6));
 
     ctx.restore();
   }
@@ -195,10 +217,10 @@ class ChartRenderer {
     ctx.save();
     ctx.clearRect(0, 0, w, h);
 
-    const padLeft = 65;
+    const padLeft = 70;
     const padRight = 25;
     const padTop = 35;
-    const padBottom = 40;
+    const padBottom = 48;
 
     const plotW = w - padLeft - padRight;
     const plotH = h - padTop - padBottom;
@@ -223,8 +245,8 @@ class ChartRenderer {
     // Draw Period P vertical lines for all n*P within [start, end]
     const minN = Math.max(1, Math.ceil((start - 0.001) / periodDays));
     const maxN = Math.floor((end + 0.001) / periodDays);
-    ctx.strokeStyle = 'rgba(255, 215, 0, 0.7)';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(255, 215, 0, 0.75)';
+    ctx.lineWidth = 1.8;
     ctx.setLineDash([4, 4]);
 
     for (let n = minN; n <= maxN; n++) {
@@ -236,10 +258,13 @@ class ChartRenderer {
         ctx.lineTo(pX, padTop + plotH);
         ctx.stroke();
 
-        ctx.fillStyle = '#ffd700';
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = 'bold 13px sans-serif';
         const pText = `${n}주기 (${n}P)`;
-        ctx.fillText(pText, Math.min(pX + 5, w - 85), padTop + 16);
+        const pTextW = ctx.measureText(pText).width;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.fillRect(Math.min(pX + 4, w - pTextW - 14), padTop + 4, pTextW + 8, 20);
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText(pText, Math.min(pX + 8, w - pTextW - 10), padTop + 18);
       }
     }
     ctx.setLineDash([]);
@@ -303,23 +328,87 @@ class ChartRenderer {
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
-    // Value Tooltip on Chart
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px sans-serif';
+    // Value Tooltip on Chart (Prominent Badge)
+    ctx.font = 'bold 13.5px sans-serif';
     const dayStr = tProgressDays >= 100 ? tProgressDays.toFixed(0) : tProgressDays.toFixed(1);
     const fluxPctStr = (currentPt.flux * 100).toFixed(3);
     const fluxValText = `t: ${dayStr}일 | 광도: ${fluxPctStr}%`;
-    ctx.fillText(fluxValText, Math.min(Math.max(currentX + 10, padLeft + 10), w - 170), Math.max(padTop + 32, currentY - 10));
+    const tipMetrics = ctx.measureText(fluxValText);
+    const tipW = tipMetrics.width + 18;
+    const tipH = 26;
+    const tipX = Math.min(Math.max(currentX + 10, padLeft + 8), w - tipW - 10);
+    const tipY = Math.max(padTop + 24, Math.min(padTop + plotH - tipH, currentY - 14));
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    ctx.strokeStyle = '#00ffaa';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(tipX, tipY - 18, tipW, tipH, 6);
+    else ctx.rect(tipX, tipY - 18, tipW, tipH);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(fluxValText, tipX + 9, tipY);
 
     // Annotations & Transit Status
     if (!hasTransit) {
+      // Prominent Centered Alert Banner for Students
+      ctx.save();
+      const cardW = Math.min(plotW - 30, 520);
+      const cardH = 92;
+      const cardX = padLeft + (plotW - cardW) / 2;
+      const cardY = padTop + (plotH - cardH) / 2;
+
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.strokeStyle = 'rgba(255, 51, 102, 0.85)';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = 'rgba(255, 51, 102, 0.45)';
+      ctx.shadowBlur = 16;
+
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(cardX, cardY, cardW, cardH, 12);
+      else ctx.rect(cardX, cardY, cardW, cardH);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      ctx.textAlign = 'center';
       ctx.fillStyle = '#ff3366';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText('⚠ 궤도 경사각이 낮아 식현상이 일어나지 않음 (Transit No Occur)', padLeft + 15, padTop + 30);
-    } else {
-      ctx.fillStyle = '#00ffaa';
+      ctx.font = 'bold 17.5px sans-serif';
+      ctx.fillText('⚠ 궤도 경사각이 낮아 식현상이 발생하지 않음', cardX + cardW / 2, cardY + 34);
+
+      ctx.fillStyle = '#f1f5f9';
+      ctx.font = '500 13px sans-serif';
+      ctx.fillText('공전 궤도면이 시선 방향에서 벗어나 행성이 항성 앞을 가리지 않습니다.', cardX + cardW / 2, cardY + 57);
+
+      ctx.fillStyle = '#00e5ff';
       ctx.font = 'bold 12px sans-serif';
-      ctx.fillText(`식 깊이 (Transit Depth ΔF): ${maxDepthPercent}%`, padLeft + 15, padTop + 32);
+      ctx.fillText('💡 오른쪽 슬라이더에서 궤도 경사각(θ)을 0.0°(평행)에 가깝게 조절해보세요!', cardX + cardW / 2, cardY + 77);
+
+      ctx.restore();
+    } else {
+      ctx.save();
+      ctx.font = 'bold 13.5px sans-serif';
+      const depthText = `식 깊이 (Transit Depth ΔF): ${maxDepthPercent}%`;
+      const depthMetrics = ctx.measureText(depthText);
+      const badgeW = depthMetrics.width + 20;
+      const badgeH = 26;
+      const badgeX = padLeft + 12;
+      const badgeY = padTop + 8;
+
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.strokeStyle = '#00ffaa';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 6);
+      else ctx.rect(badgeX, badgeY, badgeW, badgeH);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#00ffaa';
+      ctx.fillText(depthText, badgeX + 10, badgeY + 18);
+      ctx.restore();
     }
 
     ctx.restore();
@@ -341,10 +430,13 @@ class ChartRenderer {
       ctx.lineTo(x + w, gridY);
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.font = '10px sans-serif';
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.font = 'bold 12.5px sans-serif';
+      ctx.textAlign = 'right';
       const labelText = val > 0 ? `+${val.toFixed(0)}` : val.toFixed(0);
-      ctx.fillText(labelText, x - 40, gridY + 3);
+      ctx.fillText(labelText, x - 10, gridY + 4);
+      ctx.restore();
     });
 
     // Zero-velocity Highlight Line
@@ -365,26 +457,33 @@ class ChartRenderer {
       ctx.lineTo(gridX, y + h);
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.font = '10px sans-serif';
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.font = 'bold 12.5px sans-serif';
+      ctx.textAlign = 'center';
       const dayVal = (timeSpanDays / numXSteps) * i;
       const dayStr = dayVal >= 100 ? `${dayVal.toFixed(0)}일` : `${dayVal.toFixed(1)}일`;
-      ctx.fillText(dayStr, gridX - 12, y + h + 16);
+      ctx.fillText(dayStr, gridX, y + h + 20);
+      ctx.restore();
     }
 
-    // Y Axis Title
+    // Y Axis Title (Centered vertically on axis)
     ctx.save();
-    ctx.translate(x - 50, y + h / 2);
+    ctx.translate(x - 48, y + h / 2);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillStyle = '#a0aec0';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText(yLabelText, -40, 0);
+    ctx.fillStyle = '#00e5ff';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(yLabelText, 0, 0);
     ctx.restore();
 
-    // X Axis Title
+    // X Axis Title (Centered horizontally)
+    ctx.save();
     ctx.fillStyle = '#00e5ff';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('시간 (일 / Days)', x + w / 2 - 35, y + h + 32);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('시간 (일 / Days)', x + w / 2, y + h + 38);
+    ctx.restore();
   }
 
   drawLightCurveGridInDays(ctx, x, y, w, h, minFlux, maxFlux, startDays, endDays) {
@@ -402,10 +501,13 @@ class ChartRenderer {
       ctx.lineTo(x + w, gridY);
       ctx.stroke();
 
+      ctx.save();
       const fluxVal = maxFlux - ((maxFlux - minFlux) / steps) * i;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.font = '10px sans-serif';
-      ctx.fillText(fluxVal.toFixed(4), x - 55, gridY + 3);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.font = 'bold 12.5px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(fluxVal.toFixed(4), x - 10, gridY + 4);
+      ctx.restore();
     }
 
     const norm1 = (1.0 - minFlux) / (maxFlux - minFlux);
@@ -424,24 +526,33 @@ class ChartRenderer {
     const numXSteps = 4;
     for (let i = 0; i <= numXSteps; i++) {
       const gridX = x + (w / numXSteps) * i;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.font = '10px sans-serif';
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.font = 'bold 12.5px sans-serif';
+      ctx.textAlign = 'center';
       const dayVal = start + (spanDays / numXSteps) * i;
       const dayStr = dayVal >= 100 ? `${dayVal.toFixed(0)}일` : `${dayVal.toFixed(1)}일`;
-      ctx.fillText(dayStr, gridX - 12, y + h + 16);
+      ctx.fillText(dayStr, gridX, y + h + 20);
+      ctx.restore();
     }
 
+    // Y Axis Title (Centered vertically on axis)
     ctx.save();
     ctx.translate(x - 50, y + h / 2);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillStyle = '#a0aec0';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('상대 광도 (Relative Flux)', -60, 0);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('상대 광도 (Relative Flux)', 0, 0);
     ctx.restore();
 
+    // X Axis Title (Centered horizontally)
+    ctx.save();
     ctx.fillStyle = '#00ffaa';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('시간 (일 / Days)', x + w / 2 - 35, y + h + 32);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('시간 (일 / Days)', x + w / 2, y + h + 38);
+    ctx.restore();
   }
 }
 

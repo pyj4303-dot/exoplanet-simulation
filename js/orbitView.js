@@ -125,8 +125,11 @@ class OrbitViewRenderer {
     ctx.stroke();
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 11px sans-serif';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 4;
     ctx.fillText('질량 중심 (Barycenter)', centerX + 10, centerY - 10);
+    ctx.shadowBlur = 0;
 
     ctx.save();
     ctx.translate(centerX, centerY);
@@ -371,11 +374,14 @@ class OrbitViewRenderer {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.font = '11px sans-serif';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.font = 'bold 12.5px sans-serif';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 4;
     const impactVal = ((engine.a / engine.rStar) * engine.cosIncFactor).toFixed(2);
     ctx.fillText(`임팩트 파라미터 b = ${impactVal}`, 
-                 centerX - impactHalfW + 5, centerY + impactDistPx - 6);
+                 centerX - impactHalfW + 5, centerY + impactDistPx - 7);
+    ctx.shadowBlur = 0;
 
     // 6. Current Planet Position & Geometric Occultation Logic
     const relX = (state.planetPos.x - state.starPos.x) * scale;
@@ -420,8 +426,11 @@ class OrbitViewRenderer {
         ctx.setLineDash([]);
 
         ctx.fillStyle = '#ff3366';
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = 'bold 12.5px sans-serif';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+        ctx.shadowBlur = 4;
         ctx.fillText('(항성에 가려짐 - 2차 식)', planetX + 12, planetY + 4);
+        ctx.shadowBlur = 0;
       } else {
         const planetGlow = ctx.createRadialGradient(planetX, planetY, 1, planetX, planetY, planetRadiusPx * 1.5);
         planetGlow.addColorStop(0, '#00e5ff');
@@ -437,9 +446,12 @@ class OrbitViewRenderer {
         ctx.arc(planetX, planetY, planetRadiusPx, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = 'rgba(0, 229, 255, 0.85)';
-        ctx.font = '11px sans-serif';
+        ctx.fillStyle = 'rgba(0, 229, 255, 0.95)';
+        ctx.font = 'bold 12.5px sans-serif';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+        ctx.shadowBlur = 4;
         ctx.fillText('(보임 - 가려지지 않음)', planetX + 12, planetY + 4);
+        ctx.shadowBlur = 0;
       }
     }
 
@@ -454,19 +466,19 @@ class OrbitViewRenderer {
       zoomText = `🔍 사용자 줌: ${(totalZoom * 100).toFixed(0)}% (더블클릭 초기화)`;
     }
 
-    ctx.font = 'bold 11px sans-serif';
+    ctx.font = 'bold 12.5px sans-serif';
     const textMetrics = ctx.measureText(zoomText);
-    const badgeW = textMetrics.width + 18;
-    const badgeH = 22;
-    const badgeX = width - badgeW - 12;
+    const badgeW = textMetrics.width + 20;
+    const badgeH = 26;
+    const badgeX = width - badgeW - 14;
     const badgeY = 12;
 
-    ctx.fillStyle = 'rgba(12, 17, 34, 0.75)';
-    ctx.strokeStyle = isAutoZoomed || isUserZoomed ? 'rgba(0, 229, 255, 0.5)' : 'rgba(255, 255, 255, 0.2)';
-    ctx.lineWidth = 1;
+    ctx.fillStyle = 'rgba(12, 17, 34, 0.82)';
+    ctx.strokeStyle = isAutoZoomed || isUserZoomed ? 'rgba(0, 229, 255, 0.6)' : 'rgba(255, 255, 255, 0.25)';
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
     if (ctx.roundRect) {
-      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 11);
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 13);
     } else {
       ctx.rect(badgeX, badgeY, badgeW, badgeH);
     }
@@ -474,7 +486,7 @@ class OrbitViewRenderer {
     ctx.stroke();
 
     ctx.fillStyle = isAutoZoomed || isUserZoomed ? '#00e5ff' : '#cbd5e1';
-    ctx.fillText(zoomText, badgeX + 9, badgeY + 15);
+    ctx.fillText(zoomText, badgeX + 10, badgeY + 17);
     ctx.restore();
   }
 
@@ -498,12 +510,12 @@ class OrbitViewRenderer {
     ctx.lineTo(arrowX + 5, arrowY - 22);
     ctx.fill();
 
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('관측자 시선 방향 (Earth)', arrowX + 12, arrowY - 12);
-    ctx.font = '10px sans-serif';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.font = 'bold 13.5px sans-serif';
+    ctx.fillText('관측자 시선 방향 (Earth)', arrowX + 14, arrowY - 14);
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
     const statusStr = incDeg === 0 ? ' (평행: 최대 시선속도 & 식현상)' : (incDeg === 90 ? ' (수직: 시선속도 0)' : '');
-    ctx.fillText(`궤도 경사각 = ${incDeg.toFixed(1)}°${statusStr}`, arrowX + 12, arrowY + 3);
+    ctx.fillText(`궤도 경사각 = ${incDeg.toFixed(1)}°${statusStr}`, arrowX + 14, arrowY + 4);
     ctx.restore();
   }
 
@@ -514,16 +526,16 @@ class OrbitViewRenderer {
     ctx.fillStyle = '#090c15';
     ctx.fillRect(0, 0, width, height);
 
-    const marginX = 10;
-    const barHeight = height * 0.38;
-    const bar1Y = 18;
-    const bar2Y = bar1Y + barHeight + 22;
+    const marginX = 12;
+    const barHeight = Math.floor(height * 0.34);
+    const bar1Y = 22;
+    const bar2Y = bar1Y + barHeight + 25;
     const barWidth = width - marginX * 2;
 
-    ctx.fillStyle = '#a0aec0';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('기준 스펙트럼 (정지 상태)', marginX, bar1Y - 4);
-    ctx.fillText('관측 스펙트럼 (실시간 도플러 이동)', marginX, bar2Y - 4);
+    ctx.fillStyle = '#f1f5f9';
+    ctx.font = 'bold 12.5px sans-serif';
+    ctx.fillText('기준 스펙트럼 (정지 상태)', marginX, bar1Y - 6);
+    ctx.fillText('관측 스펙트럼 (실시간 도플러 이동)', marginX, bar2Y - 6);
 
     const rainbow1 = ctx.createLinearGradient(marginX, 0, marginX + barWidth, 0);
     const rainbowColors = [
@@ -604,8 +616,8 @@ class OrbitViewRenderer {
     else if (v_r > 0.1) typeText = '적색 편이 (Redshift - 멀어짐)';
 
     ctx.fillStyle = vrColor;
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText(`${shiftText}  |  ${typeText}`, marginX + 5, height - 5);
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillText(`${shiftText}  |  ${typeText}`, marginX + 6, height - 7);
 
     ctx.restore();
   }
