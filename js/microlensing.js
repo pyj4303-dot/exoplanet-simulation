@@ -167,9 +167,9 @@ class MicrolensingViewRenderer {
     ctx.fillRect(0, 0, w, h);
 
     // Split Canvas into 2 Distinct Sections:
-    // Section 1 (Top 40%): Side Profile Geometry View (관측자(지구) - 렌즈계 - 배경별 & 광선 굴절)
-    // Section 2 (Bottom 60%): Observer Telescope Sky View (천구 렌즈 뷰)
-    const splitY = h * 0.40;
+    // Section 1 (Top ~36%): Side Profile Geometry View (관측자(지구) - 렌즈계 - 배경별 & 광선 굴절)
+    // Section 2 (Bottom ~64%): Observer Telescope Sky View (천구 렌즈 뷰)
+    const splitY = Math.round(h * 0.36);
 
     this.renderSideProfileView(ctx, 0, 0, w, splitY, physics, state);
     this.renderTelescopeSkyView(ctx, 0, splitY, w, h - splitY, physics, state);
