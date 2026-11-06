@@ -228,7 +228,7 @@ class ChartRenderer {
         ctx.stroke();
 
         ctx.font = 'bold 13px sans-serif';
-        const pText = `${n}주기 (${n}P)`;
+        const pText = `${n}주기`;
         const pTextW = ctx.measureText(pText).width;
         ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
         ctx.fillRect(Math.min(pX + 4, w - pTextW - 14), padTop + 4, pTextW + 8, 20);
@@ -328,7 +328,7 @@ class ChartRenderer {
       ctx.textAlign = 'center';
       ctx.fillStyle = '#ff3366';
       ctx.font = 'bold 17.5px sans-serif';
-      ctx.fillText('⚠ 궤도 경사각이 낮아 식현상이 발생하지 않음', cardX + cardW / 2, cardY + 34);
+      ctx.fillText('⚠ 궤도 경사각으로 인해 식현상이 발생하지 않음', cardX + cardW / 2, cardY + 34);
 
       ctx.fillStyle = '#f1f5f9';
       ctx.font = '500 13px sans-serif';
@@ -336,13 +336,13 @@ class ChartRenderer {
 
       ctx.fillStyle = '#00e5ff';
       ctx.font = 'bold 12px sans-serif';
-      ctx.fillText('💡 오른쪽 슬라이더에서 궤도 경사각(θ)을 0.0°(평행)에 가깝게 조절해보세요!', cardX + cardW / 2, cardY + 77);
+      ctx.fillText('💡 오른쪽 슬라이더에서 궤도 경사각을 0.0°(평행)에 가깝게 조절해보세요.', cardX + cardW / 2, cardY + 77);
 
       ctx.restore();
     } else {
       ctx.save();
       ctx.font = 'bold 13.5px sans-serif';
-      const depthText = `식 깊이 (Transit Depth ΔF): ${maxDepthPercent}%`;
+      const depthText = `식 깊이 (최대 밝기 감소율): ${maxDepthPercent}%`;
       const depthMetrics = ctx.measureText(depthText);
       const badgeW = depthMetrics.width + 20;
       const badgeH = 26;
@@ -434,7 +434,7 @@ class ChartRenderer {
     ctx.fillStyle = '#00e5ff';
     ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('시간 (일 / Days)', x + w / 2, y + h + 38);
+    ctx.fillText('시간 (일)', x + w / 2, y + h + 38);
     ctx.restore();
   }
 
@@ -495,7 +495,7 @@ class ChartRenderer {
     ctx.fillStyle = '#cbd5e1';
     ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('상대 광도 (Relative Flux)', 0, 0);
+    ctx.fillText('상대 밝기 (F/F₀)', 0, 0);
     ctx.restore();
 
     // X Axis Title (Centered horizontally)
@@ -503,7 +503,7 @@ class ChartRenderer {
     ctx.fillStyle = '#00ffaa';
     ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('시간 (일 / Days)', x + w / 2, y + h + 38);
+    ctx.fillText('시간 (일)', x + w / 2, y + h + 38);
     ctx.restore();
   }
 }

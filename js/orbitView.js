@@ -125,7 +125,7 @@ class OrbitViewRenderer {
     // Section Header
     ctx.fillStyle = 'rgba(0, 229, 255, 0.95)';
     ctx.font = 'bold 13px sans-serif';
-    ctx.fillText('📐 [1] 시선 방향 관측 기하도 (Side Profile View) : 궤도 경사각(i)과 도플러 효과', x + 16, y + 22);
+    ctx.fillText('📐 [1] 시선 관측 기하도: 궤도 경사각과 도플러 효과', x + 16, y + 22);
 
     const centerY = y + h * 0.58;
     const observerX = x + w * 0.13;
@@ -177,8 +177,8 @@ class OrbitViewRenderer {
     ctx.fillStyle = waveColor;
     ctx.font = 'bold 11.5px sans-serif';
     let waveLabel = '🌊 기준 파장 (시선속도 0)';
-    if (isBlue) waveLabel = '🌊 청색편이 (Blueshift - 파장 압축)';
-    else if (isRed) waveLabel = '🌊 적색편이 (Redshift - 파장 팽창)';
+    if (isBlue) waveLabel = '🌊 청색편이 (파장 감소)';
+    else if (isRed) waveLabel = '🌊 적색편이 (파장 증가)';
     ctx.fillText(waveLabel, x + w * 0.28, centerY - 14);
 
     // 3. Observer (Earth / Telescope)
@@ -207,10 +207,7 @@ class OrbitViewRenderer {
 
     ctx.fillStyle = '#00e5ff';
     ctx.font = 'bold 12px sans-serif';
-    ctx.fillText('관측자 (지구 / Earth)', observerX - 48, centerY + earthR + 15);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.font = 'bold 10.5px sans-serif';
-    ctx.fillText('(시선 방향 도달점)', observerX - 36, centerY + earthR + 28);
+    ctx.fillText('지구 (관측자)', observerX - 32, centerY + earthR + 15);
 
     // 4. Star-Planet Orbit System in Side View (3D Tilt with Inclination)
     const rOrbitPx = Math.min(w * 0.16, 52);
@@ -329,7 +326,7 @@ class OrbitViewRenderer {
     // Section Header
     ctx.fillStyle = 'rgba(0, 229, 255, 0.95)';
     ctx.font = 'bold 13px sans-serif';
-    ctx.fillText('📐 [1] 시선 방향 관측 기하도 (Side Profile View) : 시선 정렬과 식현상 발생 원리', x + 16, y + 22);
+    ctx.fillText('📐 [1] 식현상 관측 기하도: 시선 정렬과 식현상 원리', x + 16, y + 22);
 
     const centerY = y + h * 0.58;
     const observerX = x + w * 0.13;
@@ -378,7 +375,7 @@ class OrbitViewRenderer {
     // Light beam title
     ctx.fillStyle = 'rgba(255, 215, 0, 0.85)';
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('지구 망원경으로 향하는 별빛 통로 (Light Beam)', x + w * 0.26, centerY - 14);
+    ctx.fillText('지구로 향하는 별빛 경로', x + w * 0.28, centerY - 14);
 
     // 2. Observer (Earth / Telescope)
     const earthGlow = ctx.createRadialGradient(observerX, centerY, 4, observerX, centerY, earthR * 1.8);
@@ -405,10 +402,7 @@ class OrbitViewRenderer {
 
     ctx.fillStyle = '#00e5ff';
     ctx.font = 'bold 12px sans-serif';
-    ctx.fillText('관측자 (지구 / Earth)', observerX - 48, centerY + earthR + 15);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.font = 'bold 10.5px sans-serif';
-    ctx.fillText('(시선 방향 도달점)', observerX - 36, centerY + earthR + 28);
+    ctx.fillText('지구 (관측자)', observerX - 32, centerY + earthR + 15);
 
     // 3. Planet Orbit in Side View (Tilted Orbit Plane)
     const rOrbitPx = Math.min(w * 0.16, 52);
@@ -555,7 +549,7 @@ class OrbitViewRenderer {
     // Section Header
     ctx.fillStyle = '#ffd700';
     ctx.font = 'bold 13px sans-serif';
-    ctx.fillText('🔭 [2] 행성계 공전 궤도 평면도 (Top-down Orbit View) : 공통 질량 중심 운동', x + 16, y + 24);
+    ctx.fillText('🔭 [2] 행성계 공전 궤도면: 공통 질량 중심 운동', x + 16, y + 24);
 
     const centerX = x + width / 2;
     const centerY = y + height / 2;
@@ -580,7 +574,7 @@ class OrbitViewRenderer {
     ctx.font = 'bold 13px sans-serif';
     ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
     ctx.shadowBlur = 4;
-    ctx.fillText('질량 중심 (Barycenter)', centerX + 10, centerY - 10);
+    ctx.fillText('공통 질량 중심', centerX + 10, centerY - 10);
     ctx.shadowBlur = 0;
 
     ctx.save();
@@ -710,7 +704,7 @@ class OrbitViewRenderer {
     // Section Header
     ctx.fillStyle = '#ffd700';
     ctx.font = 'bold 13px sans-serif';
-    ctx.fillText('🔭 [2] 관측자 망원경 천구 뷰 (Observer Transit Sky View) : 항성 원반 직접 관측', x + 16, y + 24);
+    ctx.fillText('🔭 [2] 망원경 관측 뷰: 항성 원반 통과', x + 16, y + 24);
 
     const centerX = x + width / 2;
     const centerY = y + height / 2;
@@ -868,7 +862,7 @@ class OrbitViewRenderer {
         ctx.font = 'bold 12.5px sans-serif';
         ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
         ctx.shadowBlur = 4;
-        ctx.fillText('(항성에 가려짐 - 2차 식)', planetX + 12, planetY + 4);
+        ctx.fillText('(2차 식: 별 뒤로 가려짐)', planetX + 12, planetY + 4);
         ctx.shadowBlur = 0;
       } else {
         const planetGlow = ctx.createRadialGradient(planetX, planetY, 1, planetX, planetY, planetRadiusPx * 1.5);
@@ -889,7 +883,7 @@ class OrbitViewRenderer {
         ctx.font = 'bold 12.5px sans-serif';
         ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
         ctx.shadowBlur = 4;
-        ctx.fillText('(보임 - 가려지지 않음)', planetX + 12, planetY + 4);
+        ctx.fillText('외계 행성', planetX + 12, planetY + 4);
         ctx.shadowBlur = 0;
       }
     }
@@ -952,7 +946,7 @@ class OrbitViewRenderer {
     ctx.fill();
 
     ctx.font = 'bold 12.5px sans-serif';
-    ctx.fillText('관측자 시선 방향 (Earth)', arrowX + 12, arrowY - 12);
+    ctx.fillText('관측자 시선 방향 (지구)', arrowX + 12, arrowY - 12);
     ctx.font = 'bold 11px sans-serif';
     ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
     const statusStr = incDeg === 0 ? ' (평행: 최대 시선속도)' : (incDeg === 90 ? ' (수직: 시선속도 0)' : '');
@@ -976,7 +970,7 @@ class OrbitViewRenderer {
     ctx.fillStyle = '#f1f5f9';
     ctx.font = 'bold 12.5px sans-serif';
     ctx.fillText('기준 스펙트럼 (정지 상태)', marginX, bar1Y - 6);
-    ctx.fillText('관측 스펙트럼 (실시간 도플러 이동)', marginX, bar2Y - 6);
+    ctx.fillText('관측 스펙트럼 (도플러 편이)', marginX, bar2Y - 6);
 
     const rainbow1 = ctx.createLinearGradient(marginX, 0, marginX + barWidth, 0);
     const rainbowColors = [
@@ -1052,9 +1046,9 @@ class OrbitViewRenderer {
 
     const absVr = Math.abs(v_r).toFixed(1);
     let shiftText = `시선속도: ${v_r >= 0 ? '+' : ''}${absVr} m/s`;
-    let typeText = '변화 없음 (시선속도 0)';
-    if (v_r < -0.1) typeText = '청색 편이 (Blueshift - 다가옴)';
-    else if (v_r > 0.1) typeText = '적색 편이 (Redshift - 멀어짐)';
+    let typeText = '편이 없음 (시선속도 0)';
+    if (v_r < -0.1) typeText = '청색 편이 (접근 중)';
+    else if (v_r > 0.1) typeText = '적색 편이 (후퇴 중)';
 
     ctx.fillStyle = vrColor;
     ctx.font = 'bold 13px sans-serif';

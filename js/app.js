@@ -370,8 +370,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function renderMath() {
+    if (typeof renderMathInElement === 'function') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '\\[', right: '\\]', display: true},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false
+      });
+    }
+  }
+
+  if (typeof renderMathInElement === 'function') {
+    renderMath();
+  } else {
+    window.addEventListener('load', renderMath);
+  }
+
   if (btnInfoModal && infoModal) {
-    btnInfoModal.addEventListener('click', () => infoModal.style.display = 'flex');
+    btnInfoModal.addEventListener('click', () => {
+      infoModal.style.display = 'flex';
+      renderMath();
+    });
     if (btnCloseModal) btnCloseModal.addEventListener('click', () => infoModal.style.display = 'none');
     infoModal.addEventListener('click', (e) => {
       if (e.target === infoModal) infoModal.style.display = 'none';
@@ -400,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (rvAmplitudeText) rvAmplitudeText.textContent = `진폭 K: ${physics.K.toFixed(2)} m/s`;
 
     if (statTransitDepth) statTransitDepth.textContent = `${fullData.maxDepthPercent} %`;
-    if (lightCurveDepthText) lightCurveDepthText.textContent = `식 깊이 ΔF: ${fullData.maxDepthPercent} %`;
+    if (lightCurveDepthText) lightCurveDepthText.textContent = `식 깊이: ${fullData.maxDepthPercent} %`;
 
     if (activeTab === 'rv') {
       rvOrbitRenderer.render(physics, currentState);
@@ -421,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (transitStatusText) {
         if (transitState.isTransiting) {
-          transitStatusText.textContent = '● 1차 식(Primary Transit) 진행 중 - 행성이 항성 앞을 가림';
+          transitStatusText.textContent = '● 1차 식 진행 중 (행성이 항성 앞 통과)';
           transitStatusText.style.color = 'var(--primary-green)';
         } else {
           const relX = (transitState.planetPos.x - transitState.starPos.x);
@@ -431,10 +454,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const isOcculted = isBehindZ && (projDistMeters < physics.rStar + physics.rPlanet);
 
           if (isOcculted) {
-            transitStatusText.textContent = '● 2차 식(Secondary Eclipse) - 행성이 항성 뒤로 가려짐';
+            transitStatusText.textContent = '● 2차 식 진행 중 (행성이 항성 뒤로 가려짐)';
             transitStatusText.style.color = 'var(--primary-pink)';
           } else {
-            transitStatusText.textContent = '● 행성 관측 가능 (항성에 가려지지 않음 - 보임)';
+            transitStatusText.textContent = '● 정상 관측 중 (식 발생 없음)';
             transitStatusText.style.color = 'var(--primary-cyan)';
           }
         }
