@@ -315,11 +315,33 @@ canvas {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
+  height: 100%;
+}
+
+.panel-controls-chart .card-canvas:first-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.panel-controls-chart .card-canvas:last-child {
+  flex-shrink: 0;
 }
 
 .chart-wrapper {
-  height: 260px;
+  flex: 1;
+  min-height: 280px;
   position: relative;
+  width: 100%;
+}
+
+.chart-wrapper canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /* Sliders Grid */
@@ -599,5 +621,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
 @media (max-width: 1024px) {
   .tab-content {
     grid-template-columns: 1fr;
+  }
+  .panel-controls-chart {
+    height: auto;
+  }
+  .chart-wrapper {
+    height: 340px;
+    min-height: 340px;
   }
 }

@@ -167,37 +167,6 @@
               <input type="range" id="inputEccentricity" min="0.0" max="0.75" step="0.01" value="0.0">
             </div>
           </div>
-
-          <!-- Formula & Summary Info Box -->
-          <div class="info-card" style="margin-top: 0.8rem;">
-            <strong>💡 물리 경향성 포인트:</strong>
-            <ul style="padding-left: 1.2rem; margin-top: 4px;">
-              <li>행성 질량이 클수록, 궤도 반지름이 작을수록 시선속도 진폭(\(K\))이 증가합니다.</li>
-              <li>경사각이 \(90^\circ\)(수직)에 가까워지면 시선속도 변화가 \(0\)으로 줄어듭니다.</li>
-            </ul>
-            <div class="formula-box">
-              <div class="formula-row">
-                <span class="formula-label">도플러 편이:</span>
-                <span class="formula-math">\(\frac{\Delta \lambda}{\lambda_0} = \frac{v_r}{c}\)</span>
-              </div>
-              <div class="formula-row">
-                <span class="formula-label">시선속도 진폭:</span>
-                <span class="formula-math">\(K \propto \frac{m_p \cos\theta}{\sqrt{a}}\)</span>
-              </div>
-            </div>
-            <div class="stats-flex">
-              <div class="stat-item">
-                <span class="stat-title">공전 주기</span>
-                <span id="statPeriod" class="stat-value">11.6 일</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-title">시선속도 진폭</span>
-                <span id="statK" class="stat-value">28.4 m/s</span>
-              </div>
-            </div>
-            <button type="button" class="btn-info-link" onclick="document.getElementById('infoModal').style.display='flex'">📖 상세 원리 및 수식 가이드 ↗</button>
-          </div>
-
         </div>
 
       </div>
@@ -305,37 +274,6 @@
               <input type="range" id="inputSemiMajorTransit" min="0.0050" max="0.1000" step="0.0001" value="0.0150">
             </div>
           </div>
-
-          <!-- Formula & Summary Info Box -->
-          <div class="info-card" style="margin-top: 0.8rem;">
-            <strong>💡 식현상 핵심 포인트:</strong>
-            <ul style="padding-left: 1.2rem; margin-top: 4px;">
-              <li>행성 반지름이 클수록 광도 감소폭(식 깊이)이 커집니다.</li>
-              <li>경사각이 커져 시선방향을 벗어나면 식현상이 발생하지 않습니다.</li>
-            </ul>
-            <div class="formula-box">
-              <div class="formula-row">
-                <span class="formula-label">최대 밝기 감소율:</span>
-                <span class="formula-math">\(\frac{\Delta F}{F} = \left(\frac{R_p}{R_s}\right)^2\)</span>
-              </div>
-              <div class="formula-row">
-                <span class="formula-label">케플러 조화 법칙:</span>
-                <span class="formula-math">\(P^2 \propto \frac{a^3}{M_s + m_p}\)</span>
-              </div>
-            </div>
-            <div class="stats-flex">
-              <div class="stat-item">
-                <span class="stat-title">공전 주기</span>
-                <span id="statPeriodTransit" class="stat-value">11.6 일</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-title">최대 밝기 감소율</span>
-                <span id="statTransitDepth" class="stat-value">1.008 %</span>
-              </div>
-            </div>
-            <button type="button" class="btn-info-link" onclick="document.getElementById('infoModal').style.display='flex'">📖 상세 원리 및 수식 가이드 ↗</button>
-          </div>
-
         </div>
 
       </div>
@@ -443,42 +381,6 @@
               <input type="range" id="inputCrossingTimeMicro" min="15.0" max="50.0" step="1.0" value="30.0">
             </div>
           </div>
-
-          <!-- Formula & Summary Info Box -->
-          <div class="info-card" style="margin-top: 0.8rem;">
-            <strong>💡 미세중력렌즈 핵심 포인트:</strong>
-            <ul style="padding-left: 1.2rem; margin-top: 4px;">
-              <li>행성 질량이 클수록 중력 렌즈에 의한 미세 피크의 높이가 증가합니다.</li>
-              <li>공전 궤도면의 경사각에 영향을 받지 않으며, 멀리 떨어진 행성 탐사에 유리합니다.</li>
-              <li>배경별과 렌즈계가 일직선상에 놓일 때만 발생하므로 일회성 관측입니다.</li>
-            </ul>
-            <div class="formula-box">
-              <div class="formula-row">
-                <span class="formula-label">광도 증폭률:</span>
-                <span class="formula-math">\(A(u) = \frac{u^2 + 2}{u\sqrt{u^2 + 4}}\)</span>
-              </div>
-              <div class="formula-row">
-                <span class="formula-label">아인슈타인 반경:</span>
-                <span class="formula-math">\(\theta_E \propto \sqrt{M_L}\)</span>
-              </div>
-            </div>
-            <div class="stats-flex">
-              <div class="stat-item">
-                <span class="stat-title">최대 광도 증폭률</span>
-                <span id="statMaxMagnification" class="stat-value">4.12 배</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-title">행성 신호 피크</span>
-                <span id="statPlanetDeltaA" class="stat-value">+0.85 배</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-title">피크 발생 시점</span>
-                <span id="statPlanetPeakTime" class="stat-value">+4.2 일</span>
-              </div>
-            </div>
-            <button type="button" class="btn-info-link" onclick="document.getElementById('infoModal').style.display='flex'">📖 상세 원리 및 수식 가이드 ↗</button>
-          </div>
-
         </div>
 
       </div>
