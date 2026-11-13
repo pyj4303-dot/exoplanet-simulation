@@ -62,8 +62,9 @@ class PhysicsEngine {
 
     // Radial Velocity Amplitude K (m/s) for Star (DO NOT TOUCH - PRESERVED 100%)
     const factor = Math.pow((2 * Math.PI * CONSTANTS.G) / this.period, 1 / 3);
-    this.K = factor * (this.mPlanet * this.sinIncFactor) /
+    this.K0 = factor * this.mPlanet /
               (Math.pow(this.mTotal, 2 / 3) * Math.sqrt(1 - this.ecc * this.ecc));
+    this.K = this.K0 * this.sinIncFactor;
   }
 
   /**
@@ -219,6 +220,7 @@ class PhysicsEngine {
       rvTimeSpanDays,
       lightCurveTimeSpanDays,
       K: this.K,
+      K0: this.K0,
       maxDepthPercent: maxDepth,
       impactParameter: parseFloat(impactParameter),
       hasTransit: hasTransit

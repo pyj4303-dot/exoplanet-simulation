@@ -432,7 +432,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPhase, 
         physics.K, 
         fullData.periodDays, 
-        fullData.rvTimeSpanDays
+        fullData.rvTimeSpanDays,
+        physics.K0
       );
     } else if (activeTab === 'transit') {
       if (isPlaying) {

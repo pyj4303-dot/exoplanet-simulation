@@ -25,24 +25,27 @@ class ChartRenderer {
   }
 
   /**
-   * Adaptive Round Y-Scale (m/s)
+   * Fixed Base Y-Scale (m/s) with Adaptive Expansion for Extreme Conditions
+   * Standard baseline scale is fixed at ±100 m/s so that when conditions change
+   * (inclination 0° -> 90°, planet mass, semi-major axis), the Y-axis scale stays
+   * completely fixed and students can directly see the waveform amplitude flatten or grow.
+   * If extreme parameters exceed 100 m/s, it expands to clean step values (200, 500, 1000...)
+   * so the waveform is never clipped.
    */
-  getNiceYScale(K) {
-    const absK = Math.abs(K);
-    if (absK <= 5) return 10;
-    if (absK <= 15) return 20;
-    if (absK <= 35) return 50;
-    if (absK <= 75) return 100;
-    if (absK <= 150) return 200;
-    if (absK <= 350) return 500;
-    if (absK <= 750) return 1000;
-    return Math.ceil((absK * 1.25) / 100) * 100;
+  getNiceYScale(scaleRef) {
+    const absVal = Math.abs(scaleRef);
+    if (absVal <= 100) return 100;
+    if (absVal <= 200) return 200;
+    if (absVal <= 500) return 500;
+    if (absVal <= 1000) return 1000;
+    if (absVal <= 2000) return 2000;
+    return Math.ceil((absVal * 1.15) / 500) * 500;
   }
 
   /**
    * Render Radial Velocity Graph (100% Aligned with 2D Orbit View)
    */
-  renderRadialVelocity(rvData, currentPhase, K, periodDays, timeSpanDays) {
+  renderRadialVelocity(rvData, currentPhase, K, periodDays, timeSpanDays, K0) {
     if (!this.canvas || !this.ctx || !rvData || !rvData.length) return;
     const ctx = this.ctx;
     const w = this.canvas.width;
@@ -60,7 +63,9 @@ class ChartRenderer {
     const plotH = h - padTop - padBottom;
     const centerY = padTop + plotH / 2;
 
-    const maxYScale = this.getNiceYScale(K);
+    const maxDataV = rvData.reduce((max, pt) => Math.max(max, Math.abs(pt.v_r)), 0);
+    const scaleRef = Math.max(100, K0 || K, maxDataV);
+    const maxYScale = this.getNiceYScale(scaleRef);
 
     // Grid lines & X-Axis in Days
     this.drawGridInDays(ctx, padLeft, padTop, plotW, plotH, centerY, maxYScale, '시선속도 v_r (m/s)', timeSpanDays);
