@@ -210,18 +210,26 @@ class OrbitViewRenderer {
     ctx.fillText('지구 (관측자)', observerX - 32, centerY + earthR + 15);
 
     // 4. Star-Planet Orbit System in Side View (3D Tilt with Inclination)
+    // 0° = 가로로 눕혀 있음, 90° = 세로로 서 있음
     const rOrbitPx = Math.min(w * 0.16, 52);
-    const cosI = engine.sinIncFactor;
-    const sinI = engine.cosIncFactor;
+    const bOrbitPx = Math.max(7, rOrbitPx * 0.22);
+    const rotAngle = (engine.inclinationDeg * Math.PI) / 180;
 
-    const sideRadiusX = Math.max(6, rOrbitPx * Math.max(0.15, cosI));
-    const sideRadiusY = Math.max(6, rOrbitPx * Math.max(0.15, sinI));
-
+    // Planet Orbit Ellipse (Tilted by inclination angle)
     ctx.strokeStyle = 'rgba(0, 229, 255, 0.35)';
     ctx.lineWidth = 1.2;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    ctx.ellipse(systemX, centerY, sideRadiusX, sideRadiusY, 0, 0, Math.PI * 2);
+    ctx.ellipse(systemX, centerY, rOrbitPx, bOrbitPx, rotAngle, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Star Orbit Ellipse (Barycentric)
+    const mRatio = engine.mPlanet / engine.mTotal;
+    const rStarOrbitPx = Math.max(3, Math.min(rOrbitPx * 0.45, rOrbitPx * mRatio * 4.0));
+    const bStarOrbitPx = Math.max(2, rStarOrbitPx * 0.22);
+    ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(systemX, centerY, rStarOrbitPx, bStarOrbitPx, rotAngle, 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
 
@@ -235,18 +243,20 @@ class OrbitViewRenderer {
     ctx.lineTo(systemX, centerY + 5);
     ctx.stroke();
 
-    // Real-time Planet position in side view
-    const maxA = engine.a || 1;
-    const relPlanetZ = state ? (state.planetPos.z / maxA) : 0;
-    const relPlanetY = state ? (state.planetPos.y / maxA) : 0;
-    const planetSideX = systemX - relPlanetZ * rOrbitPx;
-    const planetSideY = centerY - relPlanetY * rOrbitPx;
+    // Orbital phase from physics engine
+    const phi = state ? state.trueAnomaly : 0;
 
-    // Real-time Star position in side view
-    const relStarZ = state ? (state.starPos.z / maxA) : 0;
-    const relStarY = state ? (state.starPos.y / maxA) : 0;
-    const starSideX = systemX - relStarZ * rOrbitPx;
-    const starSideY = centerY - relStarY * rOrbitPx;
+    // Real-time Planet position on the tilted ellipse
+    const uPlanet = -rOrbitPx * Math.sin(phi);
+    const vPlanet = bOrbitPx * Math.cos(phi);
+    const planetSideX = systemX + uPlanet * Math.cos(rotAngle) - vPlanet * Math.sin(rotAngle);
+    const planetSideY = centerY + uPlanet * Math.sin(rotAngle) + vPlanet * Math.cos(rotAngle);
+
+    // Real-time Star position on the tilted ellipse (opposite across barycenter)
+    const uStar = +rStarOrbitPx * Math.sin(phi);
+    const vStar = -bStarOrbitPx * Math.cos(phi);
+    const starSideX = systemX + uStar * Math.cos(rotAngle) - vStar * Math.sin(rotAngle);
+    const starSideY = centerY + uStar * Math.sin(rotAngle) + vStar * Math.cos(rotAngle);
 
     // Orbit system connecting line
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
@@ -285,11 +295,11 @@ class OrbitViewRenderer {
     // System Labels
     ctx.fillStyle = '#ffd700';
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('• 중심 항성', systemX - 25, centerY - sideRadiusY - 8);
+    ctx.fillText('• 중심 항성', systemX - 25, centerY - rOrbitPx - 10);
 
     ctx.fillStyle = '#00ffaa';
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('• 외계 행성', systemX - 25, centerY + sideRadiusY + 16);
+    ctx.fillText('• 외계 행성', systemX - 25, centerY + rOrbitPx + 18);
 
     // 5. Inclination Status Badge in Top-Right
     const badgeW = 210;
@@ -405,18 +415,16 @@ class OrbitViewRenderer {
     ctx.fillText('지구 (관측자)', observerX - 32, centerY + earthR + 15);
 
     // 3. Planet Orbit in Side View (Tilted Orbit Plane)
+    // 0° = 가로로 눕혀 있음, 90° = 세로로 서 있음
     const rOrbitPx = Math.min(w * 0.16, 52);
-    const cosI = engine.sinIncFactor;
-    const sinI = engine.cosIncFactor;
-
-    const sideRadiusX = Math.max(6, rOrbitPx * Math.max(0.15, cosI));
-    const sideRadiusY = Math.max(6, rOrbitPx * Math.max(0.15, sinI));
+    const bOrbitPx = Math.max(7, rOrbitPx * 0.22);
+    const rotAngle = (engine.inclinationDeg * Math.PI) / 180;
 
     ctx.strokeStyle = state && state.isTransiting ? 'rgba(0, 255, 170, 0.5)' : 'rgba(0, 229, 255, 0.35)';
     ctx.lineWidth = 1.2;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    ctx.ellipse(systemX, centerY, sideRadiusX, sideRadiusY, 0, 0, Math.PI * 2);
+    ctx.ellipse(systemX, centerY, rOrbitPx, bOrbitPx, rotAngle, 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
 
@@ -437,11 +445,11 @@ class OrbitViewRenderer {
     ctx.fill();
 
     // 5. Planet Body in side view
-    const maxA = engine.a || 1;
-    const relPlanetZ = state ? (state.planetPos.z / maxA) : 0;
-    const relPlanetY = state ? (state.planetPos.y / maxA) : 0;
-    const planetSideX = systemX - relPlanetZ * rOrbitPx;
-    const planetSideY = centerY - relPlanetY * rOrbitPx;
+    const phi = state ? state.trueAnomaly : 0;
+    const uPlanet = -rOrbitPx * Math.sin(phi);
+    const vPlanet = bOrbitPx * Math.cos(phi);
+    const planetSideX = systemX + uPlanet * Math.cos(rotAngle) - vPlanet * Math.sin(rotAngle);
+    const planetSideY = centerY + uPlanet * Math.sin(rotAngle) + vPlanet * Math.cos(rotAngle);
 
     const planetR = Math.max(4, Math.min(9, 5 * Math.cbrt(engine.rPlanetJup)));
 
@@ -493,12 +501,12 @@ class OrbitViewRenderer {
     // Labels
     ctx.fillStyle = '#ffaa66';
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('• 중심 항성', systemX - 25, centerY - sideRadiusY - 8);
+    ctx.fillText('• 중심 항성', systemX - 25, centerY - rOrbitPx - 10);
 
     ctx.fillStyle = state && state.isTransiting ? '#00ffaa' : '#00e5ff';
     ctx.font = 'bold 11px sans-serif';
     const planetText = state && state.isTransiting ? '• 외계 행성 (식 진행 중 - 별빛 차폐)' : '• 외계 행성';
-    ctx.fillText(planetText, systemX - 35, centerY + sideRadiusY + 16);
+    ctx.fillText(planetText, systemX - 35, centerY + rOrbitPx + 18);
 
     // 6. Real-time Status Pill in Top-Right
     const isTransiting = state && state.isTransiting;

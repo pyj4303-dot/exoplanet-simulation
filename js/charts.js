@@ -200,7 +200,7 @@ class ChartRenderer {
 
     const minFluxNeeded = lightCurveData.reduce((min, pt) => Math.min(min, pt.flux), 1.0);
     const minFluxScale = Math.min(0.985, minFluxNeeded - 0.003);
-    const maxFluxScale = 1.002;
+    const maxFluxScale = 1.0;
 
     const getFluxY = (flux) => {
       const norm = (flux - minFluxScale) / (maxFluxScale - minFluxScale);
