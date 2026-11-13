@@ -25,27 +25,19 @@ class ChartRenderer {
   }
 
   /**
-   * Fixed Base Y-Scale (m/s) with Adaptive Expansion for Extreme Conditions
-   * Standard baseline scale is fixed at ±100 m/s so that when conditions change
-   * (inclination 0° -> 90°, planet mass, semi-major axis), the Y-axis scale stays
-   * completely fixed and students can directly see the waveform amplitude flatten or grow.
-   * If extreme parameters exceed 100 m/s, it expands to clean step values (200, 500, 1000...)
-   * so the waveform is never clipped.
+   * Strictly Fixed Y-Scale (±100 m/s)
+   * The Y-axis scale is strictly fixed at ±100 m/s (+100, +50, 0, -50, -100)
+   * so that students can directly compare the trend of change (amplitude variations)
+   * whenever planet mass, inclination, orbital radius, or star mass changes.
    */
-  getNiceYScale(scaleRef) {
-    const absVal = Math.abs(scaleRef);
-    if (absVal <= 100) return 100;
-    if (absVal <= 200) return 200;
-    if (absVal <= 500) return 500;
-    if (absVal <= 1000) return 1000;
-    if (absVal <= 2000) return 2000;
-    return Math.ceil((absVal * 1.15) / 500) * 500;
+  getNiceYScale() {
+    return 100;
   }
 
   /**
    * Render Radial Velocity Graph (100% Aligned with 2D Orbit View)
    */
-  renderRadialVelocity(rvData, currentPhase, K, periodDays, timeSpanDays, K0) {
+  renderRadialVelocity(rvData, currentPhase, K, periodDays, timeSpanDays) {
     if (!this.canvas || !this.ctx || !rvData || !rvData.length) return;
     const ctx = this.ctx;
     const w = this.canvas.width;
@@ -63,9 +55,8 @@ class ChartRenderer {
     const plotH = h - padTop - padBottom;
     const centerY = padTop + plotH / 2;
 
-    const maxDataV = rvData.reduce((max, pt) => Math.max(max, Math.abs(pt.v_r)), 0);
-    const scaleRef = Math.max(100, K0 || K, maxDataV);
-    const maxYScale = this.getNiceYScale(scaleRef);
+    // Strictly fixed Y-scale: ±100 m/s
+    const maxYScale = 100;
 
     // Grid lines & X-Axis in Days
     this.drawGridInDays(ctx, padLeft, padTop, plotW, plotH, centerY, maxYScale, '시선속도 v_r (m/s)', timeSpanDays);
@@ -91,6 +82,12 @@ class ChartRenderer {
       ctx.fillText(pText, Math.min(pX + 8, w - pTextW - 10), padTop + 18);
     }
 
+    // Clip curve drawing strictly inside the plot area so extreme values gracefully overflow the boundary line
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padLeft, padTop, plotW, plotH);
+    ctx.clip();
+
     // Draw Main RV Curve directly from physics rvData
     ctx.beginPath();
     ctx.strokeStyle = '#00e5ff';
@@ -100,13 +97,14 @@ class ChartRenderer {
 
     rvData.forEach((pt, i) => {
       const x = padLeft + (pt.timeDays / timeSpanDays) * plotW;
-      const normY = Math.max(-1.1, Math.min(1.1, pt.v_r / maxYScale));
+      const normY = pt.v_r / maxYScale;
       const y = centerY - normY * (plotH / 2);
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
     ctx.stroke();
     ctx.shadowBlur = 0;
+    ctx.restore();
 
     // Current Time Indicator line & dot (100% Synchronized with 2D Orbit View)
     // Orbital time in Days is currentPhase * periodDays
