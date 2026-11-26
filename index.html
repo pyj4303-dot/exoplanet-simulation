@@ -49,6 +49,11 @@
       </div>
 
 
+      <!-- Fullscreen Toggle Button -->
+      <button id="btnHeaderFullscreen" class="btn-fullscreen-toggle" title="시뮬레이션 전체 화면 확대/축소">
+        <span class="fs-icon">⛶</span> <span class="fs-text">전체 화면</span>
+      </button>
+
       <!-- Concept Info Button -->
       <button id="btnInfoModal" class="btn-icon" title="탐사 원리 가이드">ℹ️ 원리 설명</button>
     </div>
@@ -81,7 +86,12 @@
               <span>🌌 행성계 궤도 운동 및 시선 방향</span>
               <span class="badge">공통 질량 중심계</span>
             </div>
-            <span id="rvOrbitStatus" style="font-size: 0.78rem; color: var(--primary-cyan);">질량중심 회전 중</span>
+            <div class="card-header-actions">
+              <span id="rvOrbitStatus" style="font-size: 0.78rem; color: var(--primary-cyan);">질량중심 회전 중</span>
+              <button class="btn-fullscreen-toggle btn-tab-fullscreen" title="시선속도법 큰 화면으로 보기">
+                <span class="fs-icon">⛶</span> <span class="fs-text">전체 화면</span>
+              </button>
+            </div>
           </div>
 
           <!-- Canvas 1: 2D Orbit View -->
@@ -184,7 +194,12 @@
               <span>🔭 관측자 시점 식현상</span>
               <span class="badge">망원경 관측</span>
             </div>
-            <span id="transitStatusText" style="font-size: 0.8rem; color: var(--primary-green);">식 진행 중</span>
+            <div class="card-header-actions">
+              <span id="transitStatusText" style="font-size: 0.8rem; color: var(--primary-green);">식 진행 중</span>
+              <button class="btn-fullscreen-toggle btn-tab-fullscreen" title="식현상 큰 화면으로 보기">
+                <span class="fs-icon">⛶</span> <span class="fs-text">전체 화면</span>
+              </button>
+            </div>
           </div>
 
           <!-- Canvas 2: Transit Observer View -->
@@ -291,7 +306,12 @@
               <span>🔭 미세중력렌즈 천구 관측 뷰</span>
               <span class="badge">빛의 굴절과 집광</span>
             </div>
-            <span id="microlensingStatusText" style="font-size: 0.8rem; color: var(--primary-green);">렌즈계 통과 중</span>
+            <div class="card-header-actions">
+              <span id="microlensingStatusText" style="font-size: 0.8rem; color: var(--primary-green);">렌즈계 통과 중</span>
+              <button class="btn-fullscreen-toggle btn-tab-fullscreen" title="미세중력렌즈 큰 화면으로 보기">
+                <span class="fs-icon">⛶</span> <span class="fs-text">전체 화면</span>
+              </button>
+            </div>
           </div>
 
           <!-- Canvas 3: Microlensing Sky View -->

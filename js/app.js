@@ -401,6 +401,104 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Fullscreen Management for Each Tab
+  const fullscreenButtons = document.querySelectorAll('.btn-fullscreen-toggle');
+
+  function resizeAllCanvases() {
+    rvOrbitRenderer.resizeCanvas();
+    rvChartRenderer.resizeCanvas();
+    transitOrbitRenderer.resizeCanvas();
+    lightCurveChartRenderer.resizeCanvas();
+    microViewRenderer.resizeCanvas();
+    microChartRenderer.resizeCanvas();
+  }
+
+  function updateFullscreenButtons(isFullscreen) {
+    const isFs = isFullscreen !== undefined 
+      ? isFullscreen 
+      : (!!document.fullscreenElement || document.body.classList.contains('fullscreen-mode'));
+
+    fullscreenButtons.forEach(btn => {
+      const iconSpan = btn.querySelector('.fs-icon');
+      const textSpan = btn.querySelector('.fs-text');
+      if (isFs) {
+        if (iconSpan) iconSpan.textContent = '🗗';
+        if (textSpan) textSpan.textContent = '전체화면 종료';
+        btn.title = '전체 화면 종료 (원래 크기로 복귀)';
+        btn.classList.add('is-active');
+      } else {
+        if (iconSpan) iconSpan.textContent = '⛶';
+        if (textSpan) textSpan.textContent = '전체 화면';
+        btn.title = '시뮬레이션 큰 화면으로 보기 (전체 화면)';
+        btn.classList.remove('is-active');
+      }
+    });
+  }
+
+  function toggleFullscreen() {
+    const isFs = !!document.fullscreenElement || document.body.classList.contains('fullscreen-mode');
+    if (!isFs) {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen()
+          .then(() => {
+            document.body.classList.add('fullscreen-mode');
+            updateFullscreenButtons(true);
+            setTimeout(resizeAllCanvases, 60);
+          })
+          .catch(() => {
+            // Fallback for restricted environments
+            document.body.classList.add('fullscreen-mode');
+            updateFullscreenButtons(true);
+            setTimeout(resizeAllCanvases, 60);
+          });
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen();
+        document.body.classList.add('fullscreen-mode');
+        updateFullscreenButtons(true);
+        setTimeout(resizeAllCanvases, 60);
+      } else {
+        document.body.classList.add('fullscreen-mode');
+        updateFullscreenButtons(true);
+        setTimeout(resizeAllCanvases, 60);
+      }
+    } else {
+      if (document.fullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      }
+      document.body.classList.remove('fullscreen-mode');
+      updateFullscreenButtons(false);
+      setTimeout(resizeAllCanvases, 60);
+    }
+  }
+
+  fullscreenButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFullscreen();
+    });
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    const isFs = !!document.fullscreenElement;
+    document.body.classList.toggle('fullscreen-mode', isFs);
+    updateFullscreenButtons(isFs);
+    setTimeout(resizeAllCanvases, 60);
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('fullscreen-mode') && !document.fullscreenElement) {
+      document.body.classList.remove('fullscreen-mode');
+      updateFullscreenButtons(false);
+      setTimeout(resizeAllCanvases, 60);
+    }
+  });
+
+  updateFullscreenButtons(false);
+
   updatePhysicsFromInputs();
 
   let lastTime = performance.now();

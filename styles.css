@@ -630,3 +630,210 @@ input[type="range"]::-webkit-slider-thumb:hover {
     min-height: 340px;
   }
 }
+
+/* Fullscreen Toggle Buttons */
+.card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-fullscreen-toggle {
+  background: rgba(0, 229, 255, 0.12);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  color: var(--primary-cyan);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.btn-fullscreen-toggle:hover {
+  background: var(--primary-cyan);
+  color: #000;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+  border-color: var(--primary-cyan);
+}
+
+.btn-fullscreen-toggle .fs-icon {
+  font-size: 0.95rem;
+}
+
+/* Fullscreen Active State */
+body.fullscreen-mode .btn-fullscreen-toggle,
+:fullscreen .btn-fullscreen-toggle {
+  background: rgba(255, 51, 102, 0.16);
+  border-color: rgba(255, 51, 102, 0.45);
+  color: #ff6688;
+}
+
+body.fullscreen-mode .btn-fullscreen-toggle:hover,
+:fullscreen .btn-fullscreen-toggle:hover {
+  background: var(--primary-pink);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(255, 51, 102, 0.5);
+  border-color: var(--primary-pink);
+}
+
+/* ========================================================
+   FULLSCREEN ZERO-SCROLL RESPONSIVE LAYOUT
+   ======================================================== */
+:fullscreen body,
+body.fullscreen-mode {
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+
+:fullscreen header.app-header,
+body.fullscreen-mode header.app-header {
+  padding: 0.35rem 1.4rem;
+}
+
+:fullscreen .brand-title h1,
+body.fullscreen-mode .brand-title h1 {
+  font-size: 1.15rem;
+}
+
+:fullscreen .tab-navigation,
+body.fullscreen-mode .tab-navigation {
+  padding: 0.3rem 1rem 0 1rem;
+}
+
+:fullscreen .tab-btn,
+body.fullscreen-mode .tab-btn {
+  padding: 6px 18px;
+  font-size: 0.88rem;
+}
+
+:fullscreen main.dashboard-container,
+body.fullscreen-mode main.dashboard-container {
+  padding: 0.5rem 1.4rem;
+  height: calc(100vh - 95px);
+  max-height: calc(100vh - 95px);
+  overflow: hidden !important;
+}
+
+:fullscreen .tab-content.active,
+body.fullscreen-mode .tab-content.active {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden !important;
+  gap: 1rem;
+}
+
+:fullscreen .panel-visual,
+body.fullscreen-mode .panel-visual {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden !important;
+  gap: 0.5rem;
+}
+
+:fullscreen .panel-visual .card-canvas,
+body.fullscreen-mode .panel-visual .card-canvas {
+  height: 100%;
+  max-height: 100%;
+  padding: 0.65rem 0.9rem;
+  overflow: hidden !important;
+}
+
+:fullscreen .canvas-wrapper,
+body.fullscreen-mode .canvas-wrapper {
+  min-height: 0 !important;
+  flex: 1 !important;
+  height: 100% !important;
+}
+
+:fullscreen .spectrum-wrapper,
+body.fullscreen-mode .spectrum-wrapper {
+  height: 75px !important;
+  flex-shrink: 0 !important;
+  margin-top: 4px;
+}
+
+:fullscreen .panel-controls-chart,
+body.fullscreen-mode .panel-controls-chart {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden !important;
+  gap: 0.6rem;
+}
+
+:fullscreen .panel-controls-chart .card-canvas:first-child,
+body.fullscreen-mode .panel-controls-chart .card-canvas:first-child {
+  flex: 1.15;
+  min-height: 0;
+  overflow: hidden !important;
+  padding: 0.65rem 0.9rem;
+}
+
+:fullscreen .panel-controls-chart .card-canvas:last-child,
+body.fullscreen-mode .panel-controls-chart .card-canvas:last-child {
+  flex: 0.85;
+  min-height: 0;
+  overflow: hidden !important;
+  padding: 0.65rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+}
+
+:fullscreen .chart-wrapper,
+body.fullscreen-mode .chart-wrapper {
+  min-height: 0 !important;
+  flex: 1 !important;
+  position: relative;
+}
+
+:fullscreen .card-header,
+body.fullscreen-mode .card-header {
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.35rem;
+}
+
+:fullscreen .card-title,
+body.fullscreen-mode .card-title {
+  font-size: 0.95rem;
+}
+
+:fullscreen .sliders-grid,
+body.fullscreen-mode .sliders-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 14px;
+  align-content: space-evenly;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+:fullscreen .slider-group,
+body.fullscreen-mode .slider-group {
+  margin-bottom: 0;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+:fullscreen .slider-label,
+body.fullscreen-mode .slider-label {
+  font-size: 0.78rem;
+  margin-bottom: 2px;
+}
+
+:fullscreen .slider-value,
+body.fullscreen-mode .slider-value {
+  font-size: 0.78rem;
+}
+
+:fullscreen input[type="range"],
+body.fullscreen-mode input[type="range"] {
+  height: 4px;
+}
