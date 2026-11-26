@@ -136,7 +136,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>행성 질량 (\(m_p\))</span>
-                <span id="valPlanetMass" class="slider-value">1.00 M_Jup</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numPlanetMass" class="slider-num-input" min="0.01" max="50.0" step="0.1" value="1.00">
+                  <span class="unit-text">M_Jup</span>
+                </div>
               </div>
               <input type="range" id="inputPlanetMass" min="0.01" max="50.0" step="0.1" value="1.0">
             </div>
@@ -145,7 +148,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>항성 질량 (\(M_s\))</span>
-                <span id="valStarMass" class="slider-value">1.00 M_Sun</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numStarMass" class="slider-num-input" min="0.1" max="5.0" step="0.05" value="1.00">
+                  <span class="unit-text">M_Sun</span>
+                </div>
               </div>
               <input type="range" id="inputStarMass" min="0.1" max="5.0" step="0.05" value="1.0">
             </div>
@@ -154,7 +160,11 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>시선방향과 궤도면 각도 (\(\theta\))</span>
-                <span id="valInclination" class="slider-value">0.0° (평행)</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numInclination" class="slider-num-input" min="0" max="90" step="0.5" value="0.0">
+                  <span class="unit-text">°</span>
+                  <span id="valInclination" class="slider-hint">(평행)</span>
+                </div>
               </div>
               <input type="range" id="inputInclination" min="0" max="90" step="0.5" value="0">
             </div>
@@ -163,7 +173,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>궤도 반지름 (\(a\))</span>
-                <span id="valSemiMajor" class="slider-value">0.10 AU</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numSemiMajor" class="slider-num-input" min="0.01" max="2.0" step="0.01" value="0.10">
+                  <span class="unit-text">AU</span>
+                </div>
               </div>
               <input type="range" id="inputSemiMajor" min="0.01" max="2.0" step="0.01" value="0.10">
             </div>
@@ -172,7 +185,9 @@
             <div class="slider-group" style="grid-column: span 2;">
               <div class="slider-label">
                 <span>궤도 이심률 (\(e\))</span>
-                <span id="valEccentricity" class="slider-value">0.00</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numEccentricity" class="slider-num-input" min="0.0" max="0.75" step="0.01" value="0.00">
+                </div>
               </div>
               <input type="range" id="inputEccentricity" min="0.0" max="0.75" step="0.01" value="0.0">
             </div>
@@ -239,7 +254,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>행성 질량 (\(m_p\))</span>
-                <span id="valPlanetMassTransit" class="slider-value">1.00 M_Jup</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numPlanetMassTransit" class="slider-num-input" min="0.01" max="50.0" step="0.1" value="1.00">
+                  <span class="unit-text">M_Jup</span>
+                </div>
               </div>
               <input type="range" id="inputPlanetMassTransit" min="0.01" max="50.0" step="0.1" value="1.0">
             </div>
@@ -248,7 +266,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>항성 질량 (\(M_s\))</span>
-                <span id="valStarMassTransit" class="slider-value">1.00 M_Sun</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numStarMassTransit" class="slider-num-input" min="0.1" max="5.0" step="0.05" value="1.00">
+                  <span class="unit-text">M_Sun</span>
+                </div>
               </div>
               <input type="range" id="inputStarMassTransit" min="0.1" max="5.0" step="0.05" value="1.0">
             </div>
@@ -257,7 +278,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>행성 반지름 (\(R_p\))</span>
-                <span id="valPlanetRadius" class="slider-value">1.00 R_Jup</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numPlanetRadius" class="slider-num-input" min="0.05" max="2.5" step="0.01" value="1.00">
+                  <span class="unit-text">R_Jup</span>
+                </div>
               </div>
               <input type="range" id="inputPlanetRadius" min="0.05" max="2.5" step="0.01" value="1.0">
             </div>
@@ -266,7 +290,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>항성 반지름 (\(R_s\))</span>
-                <span id="valStarRadius" class="slider-value">1.00 R_Sun</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numStarRadius" class="slider-num-input" min="0.1" max="3.0" step="0.05" value="1.00">
+                  <span class="unit-text">R_Sun</span>
+                </div>
               </div>
               <input type="range" id="inputStarRadius" min="0.1" max="3.0" step="0.05" value="1.0">
             </div>
@@ -275,7 +302,11 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>시선방향과 궤도면 각도 (\(\theta\))</span>
-                <span id="valInclinationTransit" class="slider-value">0.0° (평행)</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numInclinationTransit" class="slider-num-input" min="0" max="90" step="0.5" value="0.0">
+                  <span class="unit-text">°</span>
+                  <span id="valInclinationTransit" class="slider-hint">(평행)</span>
+                </div>
               </div>
               <input type="range" id="inputInclinationTransit" min="0" max="90" step="0.5" value="0">
             </div>
@@ -284,7 +315,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>궤도 반지름 (\(a\))</span>
-                <span id="valSemiMajorTransit" class="slider-value">0.0150 AU</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numSemiMajorTransit" class="slider-num-input wide" min="0.0050" max="0.1000" step="0.0001" value="0.0150">
+                  <span class="unit-text">AU</span>
+                </div>
               </div>
               <input type="range" id="inputSemiMajorTransit" min="0.0050" max="0.1000" step="0.0001" value="0.0150">
             </div>
@@ -351,7 +385,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>외계 행성 질량 (\(m_p\))</span>
-                <span id="valPlanetMassMicro" class="slider-value">3.00 M_Jup</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numPlanetMassMicro" class="slider-num-input" min="0.1" max="20.0" step="0.1" value="3.00">
+                  <span class="unit-text">M_Jup</span>
+                </div>
               </div>
               <input type="range" id="inputPlanetMassMicro" min="0.1" max="20.0" step="0.1" value="3.0">
             </div>
@@ -360,7 +397,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>렌즈 별 질량 (\(M_L\))</span>
-                <span id="valLensStarMass" class="slider-value">0.50 M_Sun</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numLensStarMass" class="slider-num-input" min="0.1" max="2.0" step="0.05" value="0.50">
+                  <span class="unit-text">M_Sun</span>
+                </div>
               </div>
               <input type="range" id="inputLensStarMass" min="0.1" max="2.0" step="0.05" value="0.5">
             </div>
@@ -369,7 +409,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>최소 접근 거리 (\(u_0\))</span>
-                <span id="valImpactParamMicro" class="slider-value">0.20 θ_E</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numImpactParamMicro" class="slider-num-input" min="0.05" max="0.60" step="0.01" value="0.20">
+                  <span class="unit-text">θ_E</span>
+                </div>
               </div>
               <input type="range" id="inputImpactParamMicro" min="0.05" max="0.60" step="0.01" value="0.20">
             </div>
@@ -378,7 +421,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>행성-별 분리 거리 (\(s\))</span>
-                <span id="valPlanetSepMicro" class="slider-value">1.05 θ_E</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numPlanetSepMicro" class="slider-num-input" min="0.60" max="1.60" step="0.01" value="1.05">
+                  <span class="unit-text">θ_E</span>
+                </div>
               </div>
               <input type="range" id="inputPlanetSepMicro" min="0.60" max="1.60" step="0.01" value="1.05">
             </div>
@@ -387,7 +433,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>행성 위치각 (\(\phi\))</span>
-                <span id="valPlanetPhiMicro" class="slider-value">45.0°</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numPlanetPhiMicro" class="slider-num-input" min="0" max="360" step="1.0" value="45.0">
+                  <span class="unit-text">°</span>
+                </div>
               </div>
               <input type="range" id="inputPlanetPhiMicro" min="0" max="360" step="1.0" value="45.0">
             </div>
@@ -396,7 +445,10 @@
             <div class="slider-group">
               <div class="slider-label">
                 <span>아인슈타인 교차 시간 (\(t_E\))</span>
-                <span id="valCrossingTimeMicro" class="slider-value">30.0 일</span>
+                <div class="slider-input-wrap">
+                  <input type="number" id="numCrossingTimeMicro" class="slider-num-input" min="15.0" max="50.0" step="1.0" value="30.0">
+                  <span class="unit-text">일</span>
+                </div>
               </div>
               <input type="range" id="inputCrossingTimeMicro" min="15.0" max="50.0" step="1.0" value="30.0">
             </div>

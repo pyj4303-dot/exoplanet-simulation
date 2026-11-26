@@ -361,6 +361,7 @@ canvas {
 .slider-label {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 0.88rem;
   color: var(--text-muted);
 }
@@ -369,6 +370,69 @@ canvas {
   color: var(--primary-cyan);
   font-size: 0.95rem;
   font-weight: 700;
+}
+
+/* Number input styling alongside range sliders */
+.slider-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(8, 14, 28, 0.75);
+  border: 1px solid rgba(0, 229, 255, 0.28);
+  border-radius: 6px;
+  padding: 2px 7px;
+  transition: all 0.2s ease;
+}
+
+.slider-input-wrap:hover {
+  border-color: rgba(0, 229, 255, 0.5);
+  background: rgba(12, 20, 40, 0.85);
+}
+
+.slider-input-wrap:focus-within {
+  border-color: var(--primary-cyan);
+  background: rgba(16, 26, 52, 0.95);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.45);
+}
+
+.slider-num-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--primary-cyan);
+  font-family: var(--font-family);
+  font-size: 0.9rem;
+  font-weight: 700;
+  width: 52px;
+  text-align: right;
+  padding: 1px 0;
+  -moz-appearance: textfield;
+}
+
+.slider-num-input.wide {
+  width: 66px;
+}
+
+.slider-num-input::-webkit-outer-spin-button,
+.slider-num-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.unit-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.slider-hint {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-green);
+  margin-left: 2px;
+  white-space: nowrap;
 }
 
 input[type="range"] {
@@ -836,4 +900,30 @@ body.fullscreen-mode .slider-value {
 :fullscreen input[type="range"],
 body.fullscreen-mode input[type="range"] {
   height: 4px;
+}
+
+:fullscreen .slider-input-wrap,
+body.fullscreen-mode .slider-input-wrap {
+  padding: 1px 5px;
+}
+
+:fullscreen .slider-num-input,
+body.fullscreen-mode .slider-num-input {
+  font-size: 0.8rem;
+  width: 48px;
+}
+
+:fullscreen .slider-num-input.wide,
+body.fullscreen-mode .slider-num-input.wide {
+  width: 60px;
+}
+
+:fullscreen .unit-text,
+body.fullscreen-mode .unit-text {
+  font-size: 0.74rem;
+}
+
+:fullscreen .slider-hint,
+body.fullscreen-mode .slider-hint {
+  font-size: 0.72rem;
 }

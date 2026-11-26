@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputInclinationTransit = document.getElementById('inputInclinationTransit');
   const inputSemiMajorTransit = document.getElementById('inputSemiMajorTransit');
 
-  // Value Display Labels
+  // Value Display Labels & Hints
   const valPlanetMass = document.getElementById('valPlanetMass');
   const valStarMass = document.getElementById('valStarMass');
   const valPlanetMassTransit = document.getElementById('valPlanetMassTransit');
@@ -79,6 +79,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const valStarRadius = document.getElementById('valStarRadius');
   const valInclinationTransit = document.getElementById('valInclinationTransit');
   const valSemiMajorTransit = document.getElementById('valSemiMajorTransit');
+
+  // Number Inputs for Direct Typing
+  const numPlanetMass = document.getElementById('numPlanetMass');
+  const numStarMass = document.getElementById('numStarMass');
+  const numInclination = document.getElementById('numInclination');
+  const numSemiMajor = document.getElementById('numSemiMajor');
+  const numEccentricity = document.getElementById('numEccentricity');
+
+  const numPlanetMassTransit = document.getElementById('numPlanetMassTransit');
+  const numStarMassTransit = document.getElementById('numStarMassTransit');
+  const numPlanetRadius = document.getElementById('numPlanetRadius');
+  const numStarRadius = document.getElementById('numStarRadius');
+  const numInclinationTransit = document.getElementById('numInclinationTransit');
+  const numSemiMajorTransit = document.getElementById('numSemiMajorTransit');
 
   // Stats Text
   const statPeriod = document.getElementById('statPeriod');
@@ -96,6 +110,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputPlanetSepMicro = document.getElementById('inputPlanetSepMicro');
   const inputPlanetPhiMicro = document.getElementById('inputPlanetPhiMicro');
   const inputCrossingTimeMicro = document.getElementById('inputCrossingTimeMicro');
+
+  const numPlanetMassMicro = document.getElementById('numPlanetMassMicro');
+  const numLensStarMass = document.getElementById('numLensStarMass');
+  const numImpactParamMicro = document.getElementById('numImpactParamMicro');
+  const numPlanetSepMicro = document.getElementById('numPlanetSepMicro');
+  const numPlanetPhiMicro = document.getElementById('numPlanetPhiMicro');
+  const numCrossingTimeMicro = document.getElementById('numCrossingTimeMicro');
 
   const valPlanetMassMicro = document.getElementById('valPlanetMassMicro');
   const valLensStarMass = document.getElementById('valLensStarMass');
@@ -264,7 +285,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (valPlanetMassTransit) valPlanetMassTransit.textContent = `${mP.toFixed(2)} M_Jup`;
     if (valStarMass) valStarMass.textContent = `${mS.toFixed(2)} M_Sun`;
     if (valStarMassTransit) valStarMassTransit.textContent = `${mS.toFixed(2)} M_Sun`;
-    if (valInclination) valInclination.textContent = getIncLabel(inc);
+    if (valInclination) {
+      valInclination.textContent = inc === 0 ? '(평행 - 최대 시선속도)' : (inc === 90 ? '(수직 - 시선속도 0)' : '');
+    }
     if (valEccentricity) valEccentricity.textContent = `${ecc.toFixed(2)}`;
 
     const rvA = inputSemiMajor ? parseFloat(inputSemiMajor.value) : a;
@@ -274,7 +297,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (valPlanetRadius) valPlanetRadius.textContent = `${rP.toFixed(2)} R_Jup`;
     if (valStarRadius) valStarRadius.textContent = `${rS.toFixed(2)} R_Sun`;
-    if (valInclinationTransit) valInclinationTransit.textContent = getIncLabel(inc);
+    if (valInclinationTransit) {
+      valInclinationTransit.textContent = inc === 0 ? '(평행 - 최대 식현상)' : (inc === 90 ? '(수직 - 식 미발생)' : '');
+    }
+
+    // Two-way synchronization with number inputs (when not actively focused by user)
+    if (numPlanetMass && document.activeElement !== numPlanetMass) {
+      numPlanetMass.value = mP.toFixed(2);
+    }
+    if (numPlanetMassTransit && document.activeElement !== numPlanetMassTransit) {
+      numPlanetMassTransit.value = mP.toFixed(2);
+    }
+    if (numStarMass && document.activeElement !== numStarMass) {
+      numStarMass.value = mS.toFixed(2);
+    }
+    if (numStarMassTransit && document.activeElement !== numStarMassTransit) {
+      numStarMassTransit.value = mS.toFixed(2);
+    }
+    if (numInclination && document.activeElement !== numInclination) {
+      numInclination.value = inc.toFixed(1);
+    }
+    if (numInclinationTransit && document.activeElement !== numInclinationTransit) {
+      numInclinationTransit.value = inc.toFixed(1);
+    }
+    if (numSemiMajor && document.activeElement !== numSemiMajor) {
+      numSemiMajor.value = rvA.toFixed(2);
+    }
+    if (numSemiMajorTransit && document.activeElement !== numSemiMajorTransit) {
+      numSemiMajorTransit.value = transitA.toFixed(4);
+    }
+    if (numEccentricity && document.activeElement !== numEccentricity) {
+      numEccentricity.value = ecc.toFixed(2);
+    }
+    if (numPlanetRadius && document.activeElement !== numPlanetRadius) {
+      numPlanetRadius.value = rP.toFixed(2);
+    }
+    if (numStarRadius && document.activeElement !== numStarRadius) {
+      numStarRadius.value = rS.toFixed(2);
+    }
 
     physics.updateParams({
       mStarSun: mS,
@@ -301,6 +361,55 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
+
+  // Helper for two-way binding with direct number inputs
+  function bindNumberInput(numInput, rangeSlider, updateCallback, decimals = 2) {
+    if (!numInput || !rangeSlider) return;
+
+    numInput.addEventListener('input', () => {
+      if (presetSelect) presetSelect.value = 'custom';
+      const val = parseFloat(numInput.value);
+      if (!isNaN(val)) {
+        rangeSlider.value = val;
+        updateCallback(rangeSlider);
+      }
+    });
+
+    numInput.addEventListener('change', () => {
+      let val = parseFloat(numInput.value);
+      const min = parseFloat(numInput.min);
+      const max = parseFloat(numInput.max);
+      if (isNaN(val)) {
+        val = parseFloat(rangeSlider.value);
+      } else {
+        if (!isNaN(min) && val < min) val = min;
+        if (!isNaN(max) && val > max) val = max;
+      }
+      numInput.value = val.toFixed(decimals);
+      rangeSlider.value = val;
+      updateCallback(rangeSlider);
+    });
+
+    numInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        numInput.blur();
+      }
+    });
+  }
+
+  // Bind direct number typing inputs for RV and Transit
+  bindNumberInput(numPlanetMass, inputPlanetMass, updatePhysicsFromInputs, 2);
+  bindNumberInput(numStarMass, inputStarMass, updatePhysicsFromInputs, 2);
+  bindNumberInput(numInclination, inputInclination, updatePhysicsFromInputs, 1);
+  bindNumberInput(numSemiMajor, inputSemiMajor, updatePhysicsFromInputs, 2);
+  bindNumberInput(numEccentricity, inputEccentricity, updatePhysicsFromInputs, 2);
+
+  bindNumberInput(numPlanetMassTransit, inputPlanetMassTransit, updatePhysicsFromInputs, 2);
+  bindNumberInput(numStarMassTransit, inputStarMassTransit, updatePhysicsFromInputs, 2);
+  bindNumberInput(numPlanetRadius, inputPlanetRadius, updatePhysicsFromInputs, 2);
+  bindNumberInput(numStarRadius, inputStarRadius, updatePhysicsFromInputs, 2);
+  bindNumberInput(numInclinationTransit, inputInclinationTransit, updatePhysicsFromInputs, 1);
+  bindNumberInput(numSemiMajorTransit, inputSemiMajorTransit, updatePhysicsFromInputs, 4);
 
   if (presetSelect) {
     presetSelect.addEventListener('change', (e) => {
@@ -341,6 +450,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (valPlanetPhiMicro) valPlanetPhiMicro.textContent = `${phi.toFixed(1)}°`;
     if (valCrossingTimeMicro) valCrossingTimeMicro.textContent = `${tE.toFixed(1)} 일`;
 
+    // Two-way synchronization with Microlensing number inputs
+    if (numPlanetMassMicro && document.activeElement !== numPlanetMassMicro) {
+      numPlanetMassMicro.value = mP.toFixed(2);
+    }
+    if (numLensStarMass && document.activeElement !== numLensStarMass) {
+      numLensStarMass.value = mL.toFixed(2);
+    }
+    if (numImpactParamMicro && document.activeElement !== numImpactParamMicro) {
+      numImpactParamMicro.value = u0.toFixed(2);
+    }
+    if (numPlanetSepMicro && document.activeElement !== numPlanetSepMicro) {
+      numPlanetSepMicro.value = s.toFixed(2);
+    }
+    if (numPlanetPhiMicro && document.activeElement !== numPlanetPhiMicro) {
+      numPlanetPhiMicro.value = phi.toFixed(1);
+    }
+    if (numCrossingTimeMicro && document.activeElement !== numCrossingTimeMicro) {
+      numCrossingTimeMicro.value = tE.toFixed(1);
+    }
+
     microPhysics.updateParams({
       mLensSun: mL,
       mPlanetJup: mP,
@@ -362,6 +491,15 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
+
+  // Bind direct number typing inputs for Microlensing
+  bindNumberInput(numPlanetMassMicro, inputPlanetMassMicro, () => updateMicrolensingFromInputs(), 2);
+  bindNumberInput(numLensStarMass, inputLensStarMass, () => updateMicrolensingFromInputs(), 2);
+  bindNumberInput(numImpactParamMicro, inputImpactParamMicro, () => updateMicrolensingFromInputs(), 2);
+  bindNumberInput(numPlanetSepMicro, inputPlanetSepMicro, () => updateMicrolensingFromInputs(), 2);
+  bindNumberInput(numPlanetPhiMicro, inputPlanetPhiMicro, () => updateMicrolensingFromInputs(), 1);
+  bindNumberInput(numCrossingTimeMicro, inputCrossingTimeMicro, () => updateMicrolensingFromInputs(), 1);
+
   updateMicrolensingFromInputs();
 
   if (speedSelect) {
